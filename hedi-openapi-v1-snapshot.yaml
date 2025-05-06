@@ -1,0 +1,5442 @@
+openapi: 3.1.0
+info:
+  title: API for Higher Education Data Integration
+  description: >
+    ## Introduction
+
+    The objective of the HED-schema is to establish a **service-independent**
+    data model that facilitates seamless integrations between various entities.
+    This ensures that data producers and users can consistently rely on the
+    presence of specific data elements. Specific requirements for studies,
+    courses, information etc. are defined with extension model which is included
+    to main schema in future.
+
+
+    **Note! This API is used between opin.fi and Finnish higher order education
+    organizations to exchange data.However, this definition represents
+    development path of HED-schema.**
+        
+    ## Versioning policy
+
+    Participants must provide support for old major versions for transition
+    time.
+
+
+    Over time, **the schema will undergo changes**. This will alter the version
+    information of the schema, and the implementations of the interfaces must
+    indicate which schema version they implement and support.
+
+
+    The principle of versioning is designed to follow semantic versioning, where
+    the impact of the change is the basis for versioning:
+
+
+    * Major: Backward-incompatible changes that require service updates. These
+    are avoided through structural design of the schema.
+
+    * Minor: New features that are backward-compatible. For example, new fields
+    that are not mandatory.
+
+    * Patch: Bug fixes or changes that do not affect functionality.
+
+
+    The schema defines a schemaVersion field, where services set the version
+    information of the schema being used. This way, the content receiver knows
+    which version is being used, especially if the interface is not separated by
+    version-specific endpoints, e.g., by the addresses of the interface.
+
+
+    For Example:
+
+
+    * Major: If there are significant changes in the schema, the major version
+    of the schema changes. Interfaces must be updated according to the new
+    changes, e.g., essential data in the content changes to mandatory. In this
+    case, versioning information can be included in the API endpoint addresses,
+    e.g., /hed/api/v1/get..., /hed/api/v2/get..., etc.
+
+    * Minor: If new optional fields or features are added to the content, this
+    can be a minor change. API interfaces should be prepared for content fields
+    that the API may not recognize.
+
+    * Patch: Descriptive texts of the schema are updated, but the meaning of the
+    fields does not change
+
+
+    ## Mandatory technical requirements
+
+    * Authorization and authentication header must be provided,
+
+    * The only data format supported in requests and responses is JSON (not eg.
+    XML).
+
+    * If any implementation is based on draft version of schema, some changes to
+    implementation are expected. There is no currently final first version of
+    this schema. In API implementation, it is  that unknown properties are
+    ignored without causing any errors.
+
+    * String values must be trimmed. For example value: " Learn daily, grow
+    infinitely!  " should be trimmed to be "Learn daily, grow infinitely!"
+    (space characters removed).
+
+    * API implementations must allow 
+
+
+    ## Documentation readiness
+
+    For now, the documents may include experimental or proof-of-concept
+    material, so please approach them with a flexible mindset and avoid
+    scrutinizing every detail too closely. They are intended to provide insights
+    rather than definitive conclusions.
+  contact:
+    name: API documentation - Official version is not published yet.
+    url: >-
+      https://wiki.eduuni.fi/display/CSCDIGI2030TUOTEKEHITYS/HEDI-rajapinnan+tekninen+suunnitelma
+  license:
+    name: TODO
+    url: https://www.opin.fi/licenses/TODO.html
+  version: v1-snapshot
+servers:
+  - url: http://digivisio.local-dev:9109/api/hedi/v1
+    description: Local development server directly
+  - url: https://api-pilotti-dev.opindev.fi/services/hedi/v1
+    description: Pilot server
+security:
+  - DigivisioBearerAuth: []
+tags:
+  - name: AssessmentItem
+    description: >
+      Assessment items defines parts for course completions.
+
+
+      See the note below: OKSA: 212: The implementation of a course (c1967)
+      requires information about the method of completion but does not name them
+      as values. 
+
+      The M1 glossary assigns the following values to the method of completion:
+      written exam, oral exam, essay, 
+
+      practical work(s), thesis/dissertation, project/practical work,
+      internship, portfolio, lecture/learning diary, 
+
+      participation in teaching, seminar, demonstration test. (Referenced and
+      unofficially translated
+
+      from https://iri.suomi.fi/terminology/digivisio_2030/concept-41 )
+  - name: CodeSystem
+    description: >
+      Many fields in HEDS (the Higher Education Data Schema) use Code System
+      Codes. For example Language, or Field of Study.
+
+      These Code Systems are hosted and maintained in opin.fi.
+
+      Some of the Code Systems are mirrored from other Code Systems, like OPH
+      Koodisto. This mirroring 
+
+      is done manually when necessary in order to have control over changes.
+
+      Some of the Code Systems are HEDS specific.
+  - name: CompletionOption
+    description: >
+      A Completion Option is an object that defines how a student can fulfill
+      the requirements for a specific study element.
+
+      It outlines the necessary assessment items, evaluation criteria, and
+      prerequisites needed for course completion.
+  - name: CourseUnit
+    description: >
+      A specific part of studies that deals with a particular area of expertise,
+      topic, or content, which can be completed separately and has defined scope
+      and objectives.
+
+      (Reference and unofficially translated from
+      https://sanastot.suomi.fi/terminology/oksa/concept/c264 )
+  - name: CourseUnitRealization
+    description: >
+      A course organized by an educational provider, taking place at a specific
+      time and location.
+
+      (Reference and unofficially translated from
+      https://sanastot.suomi.fi/terminology/oksa/concept/c1967 )
+  - name: EnrolmentTarget
+    description: |
+      NOT IN USE
+  - name: Enrolment
+    description: |
+      NOT IN USE   
+  - name: FormalStudyOption
+    description: >
+      Formal education is degree-oriented education according to the education
+      system. It is organized, context-specific, and implemented as defined in
+      the curriculum (OPS). Formal education offerings include degree programs,
+      open higher education, specialization education, parts of degrees,
+      preparatory education for immigrants, and offerings from international
+      higher education institutions. The most important feature of formal
+      education is the credit point (ECTS) allocation for the studies included
+
+      (Reference and unofficially translated from
+      https://sanastot.suomi.fi/en/terminology/digivisio_2030/concept/concept-12
+      )
+  - name: FormalStudyOptionInstance
+    description: >
+      An instance of formal education describes the content of formal education
+      time-based content. 
+
+      For example there is FormalStudyOption like "Programming basics".It
+      defines some common details which can be references without knowing course
+      details etc. Maybe courses included are not decided yet completely.
+
+      For example, the courses may be scheduled for the period from January 1,
+      2024, to May 1, 2024. The formal study instance includes information for
+      specific time period.
+
+      There might be a education package with same almost same content but with
+      different learning methods, then that creates another instance and it
+      refers to same Formal Study Option than other one because these two
+      instances shares same basic information.
+
+      And if there is same package for next year, it is a new instance because
+      time period is different, but it can refer same FormalStudyOption.
+  - name: FormalStudyOptionBundle
+    description: |
+      THIS IS EXPERIMENTAL ENDPOINT for concept insertions.
+  - name: InformalStudyOption
+    description: >
+      Informal study or self-study (Statistics Finland’s definition): “In the
+      Adult Education Survey, self-study is defined as the acquisition of new
+      knowledge or skills that occurs outside of separately organized, formal
+      education (both formal and non-formal). This type of study can be quite
+      informal and can take place alone, with colleagues, or with acquaintances.
+
+      From the perspective of higher education institutions, this form of
+      offering includes “resources” produced by the institutions that learners
+      can use independently to support their own learning. In this case, the
+      learner does not register as a student at the institution, and the
+      institution does not assess or grant academic credits to the learner. For
+      example, freely available open learning materials can be offered as part
+      of self-study offerings. Conversely, if the learning material is such that
+      its use requires registration as a student, it is part of formal or
+      non-formal education.      
+
+      (Reference and unofficially translated from
+      https://sanastot.suomi.fi/en/terminology/digivisio_2030/concept/concept-14
+      )
+  - name: InformalStudyOptionInstance
+    description: >
+      An instance of informal study option instance describes the content of
+      time-based content, for example Webinars, Seminars, Event.
+
+
+      For instance, the webinars, events, or seminars may be scheduled for the
+      period from January 1, 2024, to May 1, 2024.
+
+      The formal study instance includes information for this specific time
+      period.
+
+
+      There might be an educational package with almost the same content but
+      delivered through different learning methods
+
+      (e.g., live webinars vs. recorded seminars). This creates another
+      instance, and it refers to the same FormalStudyOption as the other one
+      because these two instances share the same basic information.
+
+
+      If the same package is offered the next year, it is considered a new
+      instance because the time period is different,
+
+      but it can refer to the same FormalStudyOption.
+  - name: v1_studyoption
+    description: Study Options model is common for both Informal and Formal studyoption
+    x-displayName: Study Options models
+  - name: v1_studyoption_formal
+    description: Formal Study Options models
+    x-displayName: Formal Study Options models
+  - name: v1_studyoption_informal
+    description: Informal Study Option specific objects
+    x-displayName: Informal Study Option models
+  - name: v1_common
+    description: Common objects
+    x-displayName: Common schema models
+  - name: v1_info
+    description: Schema modes for information purpose
+    x-displayName: Information models
+paths:
+  /assessment-item:
+    get:
+      summary: Get details of a specific assessment item
+      description: >-
+        Retrieve detailed information about a specific assessment item by its
+        ID.
+      operationId: get-assessment-item
+      parameters:
+        - name: identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/AssessmentItemIdentifier'
+      responses:
+        '200':
+          description: assessment item details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentItem'
+        '404':
+          description: assessment item not found.
+        '500':
+          description: Internal server error.
+      tags:
+        - AssessmentItem
+    post:
+      summary: Create a new assessment item
+      description: Create a new assessment item in the system.
+      operationId: add-assessment-item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssessmentItem'
+      responses:
+        '201':
+          description: assessment item created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentItem'
+        '400':
+          description: Bad request, invalid input.
+        '500':
+          description: Internal server error.
+      tags:
+        - AssessmentItem
+    put:
+      summary: Update an existing assessment item
+      description: Update the details of an existing assessment item.
+      operationId: update-assessment-item
+      parameters:
+        - name: identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/AssessmentItemIdentifier'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssessmentItem'
+      responses:
+        '200':
+          description: assessment item updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentItem'
+        '400':
+          description: Bad request, invalid input.
+        '404':
+          description: assessment item not found.
+        '500':
+          description: Internal server error.
+      tags:
+        - AssessmentItem
+  /assessment-item/batch:
+    put:
+      summary: Add or update a batch of assessment items
+      description: Add or update multiple assessment items in the system as a batch.
+      operationId: add-or-update-assessment-items
+      tags:
+        - AssessmentItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddOrUpdateAssessmentItemsBatchRequest'
+      responses:
+        '200':
+          description: All assessment items updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddOrUpdateBatchResponse'
+        '201':
+          description: All assessment items created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddOrUpdateBatchResponse'
+        '207':
+          description: Assessment items added or updated with varying statuses
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddOrUpdateBatchResponse'
+        '400':
+          description: Bad request, invalid input.
+        '500':
+          description: Internal server error.
+  /assessment-item/list:
+    get:
+      summary: Get a list of assessment items
+      description: >-
+        Retrieve a list of assessment items with optional filtering and
+        pagination.
+      operationId: list-assessment-items
+      parameters:
+        - name: educational-institution-code
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/EducationalInstitutionCode'
+        - name: page
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Page'
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/PageSize'
+      responses:
+        '200':
+          description: A list of assessment items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AssessmentItem'
+        '400':
+          description: Bad request, invalid parameters.
+        '500':
+          description: Internal server error.
+      tags:
+        - AssessmentItem
+  /capability-statement:
+    get:
+      summary: Retrieve API capabilities
+      description: Returns supported resources and operations
+      operationId: get-capabilities
+      responses:
+        '200':
+          description: Capability statement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapabilityStatement'
+        '400':
+          description: Bad request, invalid parameters.
+        '500':
+          description: Internal server error.
+      tags:
+        - v1_info
+  /code-system:
+    get:
+      operationId: get-code-systems
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodeSystemList'
+          description: Ok
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: >-
+            Does not really happen, but the Redocly tool wants at least one
+            `4XX` response in the API spec.
+      summary: Returns all Code Systems.
+      description: |
+        Returns all Code Systems in short format, without the actual codes.
+      tags:
+        - CodeSystem
+  /code-system/{identifier}:
+    get:
+      operationId: get-code-system
+      parameters:
+        - name: identifier
+          description: The identifier of the Code System to fetch.
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodeSystemWithCodes'
+          description: Ok
+        '404':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Not Found
+      summary: Returns the Code System indicated by the Code System Identifier.
+      description: |
+        Returns the specified Code System with all codes included.
+      tags:
+        - CodeSystem
+  /completion-option:
+    get:
+      summary: Get details of a specific Completion Option
+      description: >-
+        Retrieve detailed information about a specific Completion Option by its
+        ID.
+      operationId: get-completion-option
+      parameters:
+        - name: identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/CompletionOptionIdentifier'
+      responses:
+        '200':
+          description: Completion Option details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompletionOption'
+        '404':
+          description: Completion Option not found.
+        '500':
+          description: Internal server error.
+      tags:
+        - CompletionOption
+    post:
+      summary: Create a new completion option
+      description: Create a new completion option in the system.
+      operationId: add-completion-option
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompletionOption'
+      responses:
+        '201':
+          description: completion option created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompletionOption'
+        '400':
+          description: Bad request, invalid input.
+        '500':
+          description: Internal server error.
+      tags:
+        - CompletionOption
+    put:
+      summary: Update an existing Completion Option
+      description: Update the details of an existing Completion Option.
+      operationId: update-completion-option
+      parameters:
+        - name: identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/CompletionOptionIdentifier'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompletionOption'
+      responses:
+        '200':
+          description: Completion Option updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompletionOption'
+        '400':
+          description: Bad request, invalid input.
+        '404':
+          description: Completion Option not found.
+        '500':
+          description: Internal server error.
+      tags:
+        - CompletionOption
+  /completion-option/list:
+    get:
+      summary: Get a list of completion options
+      description: >-
+        Retrieve a list of completion options with optional filtering and
+        pagination.
+      operationId: list-completion-options
+      parameters:
+        - name: educational-institution-code
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/EducationalInstitutionCode'
+        - name: page
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Page'
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/PageSize'
+      responses:
+        '200':
+          description: A list of completion options
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CompletionOption'
+        '400':
+          description: Bad request, invalid parameters.
+        '500':
+          description: Internal server error.
+      tags:
+        - CompletionOption
+  /course-unit:
+    get:
+      summary: Get details of a specific course unit
+      description: Retrieve detailed information about a specific course unit by its ID.
+      operationId: get-course-unit
+      parameters:
+        - name: identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/CourseUnitIdentifier'
+      responses:
+        '200':
+          description: Course unit details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseUnit'
+        '404':
+          description: Course unit not found.
+        '500':
+          description: Internal server error.
+      tags:
+        - CourseUnit
+    post:
+      summary: Create a new course unit
+      description: Create a new course unit in the system.
+      operationId: add-course-unit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseUnit'
+      responses:
+        '201':
+          description: Course unit created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseUnit'
+        '400':
+          description: Bad request, invalid input.
+        '500':
+          description: Internal server error.
+      tags:
+        - CourseUnit
+    put:
+      summary: Update an existing course unit
+      description: Update the details of an existing course unit.
+      operationId: update-course-unit
+      parameters:
+        - name: identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/CourseUnitIdentifier'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseUnit'
+      responses:
+        '200':
+          description: Course unit updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseUnit'
+        '400':
+          description: Bad request, invalid input.
+        '404':
+          description: Course unit not found.
+        '500':
+          description: Internal server error.
+      tags:
+        - CourseUnit
+  /course-unit/batch:
+    put:
+      summary: Add or update a batch of course units
+      description: Creates or updates a batch of course units in the system.
+      operationId: add-or-update-course-units
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddOrUpdateCourseUnitsBatchRequest'
+      responses:
+        '200':
+          description: All course units updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddOrUpdateBatchResponse'
+        '201':
+          description: All course units created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddOrUpdateBatchResponse'
+        '207':
+          description: Course units added or updated with varying statuses
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddOrUpdateBatchResponse'
+        '400':
+          description: Bad request, all entries in batch are invalid.
+        '500':
+          description: Internal server error.
+      tags:
+        - CourseUnit
+  /course-unit/list:
+    get:
+      summary: Get a list of course units
+      description: Retrieve a list of course units with optional filtering and pagination.
+      operationId: list-course-units
+      parameters:
+        - name: educational-institution-code
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/EducationalInstitutionCode'
+        - name: page
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Page'
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/PageSize'
+      responses:
+        '200':
+          description: A list of course units
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CourseUnit'
+        '400':
+          description: Bad request, invalid parameters.
+        '500':
+          description: Internal server error.
+      tags:
+        - CourseUnit
+  /course-unit-realization:
+    get:
+      summary: Get details of a specific course unit realization
+      description: >-
+        Retrieve detailed information about a specific course unit realization
+        by its ID.
+      operationId: get-course-unit-realization
+      parameters:
+        - name: identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/CourseUnitRealizationIdentifier'
+      responses:
+        '200':
+          description: Course unit realizations details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseUnitRealization'
+        '404':
+          description: Course unit not found.
+        '500':
+          description: Internal server error.
+      tags:
+        - CourseUnitRealization
+    post:
+      summary: Create a new course unit realization
+      description: Create a new course unit in the system.
+      operationId: add-course-unit-realization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseUnitRealization'
+      responses:
+        '201':
+          description: Course unit realization created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseUnitRealization'
+        '400':
+          description: Bad request, invalid input.
+        '500':
+          description: Internal server error.
+      tags:
+        - CourseUnitRealization
+    put:
+      summary: Update an existing course unit realization
+      description: Update the details of an existing course unit realization.
+      operationId: update-course-unit-realization
+      parameters:
+        - name: identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/CourseUnitRealizationIdentifier'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseUnitRealization'
+      responses:
+        '200':
+          description: Course unit realization updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseUnitRealization'
+        '400':
+          description: Bad request, invalid input.
+        '404':
+          description: Course unit realization not found.
+        '500':
+          description: Internal server error.
+      tags:
+        - CourseUnitRealization
+  /course-unit-realization/batch:
+    put:
+      summary: Add or update a batch of course unit realizations
+      description: Creates or updates a batch of course unit realizations in the system.
+      operationId: add-or-update-course-unit-realizations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: >-
+                #/components/schemas/AddOrUpdateCourseUnitRealizationsBatchRequest
+      responses:
+        '200':
+          description: All course unit realizations updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddOrUpdateBatchResponse'
+        '201':
+          description: All course unit realizations created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddOrUpdateBatchResponse'
+        '207':
+          description: Course unit realizations added or updated with varying statuses
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddOrUpdateBatchResponse'
+        '400':
+          description: Bad request, all entries in batch are invalid.
+        '500':
+          description: Internal server error.
+      tags:
+        - CourseUnitRealization
+  /course-unit-realization/list:
+    get:
+      summary: Get a list of course units realization
+      description: >-
+        Retrieve a list of course units realization with optional filtering and
+        pagination.
+      operationId: list-course-unit-realizations
+      parameters:
+        - name: educational-institution-code
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/EducationalInstitutionCode'
+        - name: page
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Page'
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/PageSize'
+      responses:
+        '200':
+          description: A list of course units realizations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CourseUnitRealization'
+        '400':
+          description: Bad request, invalid parameters.
+        '500':
+          description: Internal server error.
+      tags:
+        - CourseUnitRealization
+  /enrolment:
+    get:
+      operationId: get-enrolments
+      parameters:
+        - name: enrolment-target-identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/EnrolmentTargetIdentifier'
+        - name: learner-identifier
+          description: Returns Enrolments for the given learner.
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/LearnerIdentifier'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetEnrolmentsResponse'
+          description: Enrolment
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+      summary: Returns Enrolment participants for an Enrolment Target.
+      tags:
+        - Enrolment
+    post:
+      operationId: add-enrolment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddEnrolmentRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddEnrolmentResponse'
+          description: >-
+            The Enrolment was created successfully, because there was room, or
+            queueOk was true and the Enrolment was queued.
+        '409':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: >-
+            Conflict if we did not allow staying in queue but enrolment target
+            was full
+      summary: Enrolls a Learner to an Enrolment Target.
+      description: >
+        Enrolment might not be Accepted yet because it might need payment or
+        manual acceptance.
+
+        Then Enrolment is reserved and the state is Pending.
+
+        Confirmation about the enrolment is sent when status is changed to
+        Accepted.
+
+
+        User cannot enroll multiple times for the same EnrolmentTarget.
+
+
+        Digivisio specific case: Consent is saved for granting data for the
+        organization.
+
+
+        HEDI organization must call Digivisio corresponding API so Digivisio can
+        track enrolments.
+      tags:
+        - Enrolment
+  /enrolment/{identifier}:
+    delete:
+      operationId: cancel-enrolment
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/EnrolmentIdentifier'
+        - name: reason
+          in: query
+          required: false
+          description: The reason for cancellation.
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The Enrolment was cancelled successfully.
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+      summary: Cancels an Enrolment.
+      description: >
+        Removes participation from list. If the cancellation frees a new seat,
+        then the first in the queue is picked, and a notification is sent.
+
+        Sends notification of the cancellation.
+
+
+        HEDI organization must call Digivisio corresponding API so Digivisio can
+        track enrolments.
+      tags:
+        - Enrolment
+  /enrolment-target:
+    get:
+      operationId: get-enrolment-targets
+      parameters:
+        - name: educational-institution-code
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/EducationalInstitutionCode'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetEnrolmentTargetsResponse'
+          description: Ok
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+      summary: Returns Enrolment Targets of an Educational Institution.
+      description: |
+        HEDI_TODO: TUO-7245: This should be paged.
+      tags:
+        - EnrolmentTarget
+    post:
+      operationId: add-enrolment-target
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddEnrolmentTargetRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddEnrolmentTargetResponse'
+          description: The Enrolment Target was added successfully.
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+      summary: Adds a new Enrolment Target.
+      description: |
+        HEDI_TODO: TUO-7245: describe this.
+      tags:
+        - EnrolmentTarget
+  /enrolment-target/{identifier}:
+    get:
+      operationId: get-enrolment-target
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/EnrolmentTargetIdentifier'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetEnrolmentTargetResponse'
+          description: Ok
+        '404':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Not Found
+      summary: Returns the specified Enrolment Target.
+      tags:
+        - EnrolmentTarget
+    delete:
+      operationId: cancel-enrolment-target
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/EnrolmentTargetIdentifier'
+        - name: reason
+          in: query
+          required: false
+          description: The reason why the cancellation was made.
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The Enrolment Target was cancelled successfully.
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+      summary: Cancels an Enrolment Target.
+      description: |
+        NOTE! We must have rules, when cancelling is allowed.
+        Users must be notified about the change.
+      tags:
+        - EnrolmentTarget
+    put:
+      operationId: update-enrolment-target
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/EnrolmentTargetIdentifier'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEnrolmentTargetRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateEnrolmentTargetResponse'
+          description: The Enrolment Target was updated successfully.
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+      summary: Updates an Enrolment Target.
+      description: |
+        NOTE! We must have rules, which fields can be modified
+        and when it is allowed. Users must be notified about the change.
+      tags:
+        - EnrolmentTarget
+  /formal-studyoption:
+    get:
+      operationId: get-formal-studyoption
+      parameters:
+        - name: identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/FormalStudyOptionIdentifier'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormalStudyOption'
+          description: Ok
+        '404':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Not Found
+      summary: Returns the specified Formal Study Option.
+      description: >
+        Returns the Formal Study Option indicated by the Study Option
+        Identifier.
+      tags:
+        - FormalStudyOption
+    post:
+      operationId: add-formal-studyoption
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddFormalStudyOptionRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddFormalStudyOptionResponse'
+          description: Created
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+      summary: Adds a Formal Study Option.
+      description: >
+        StudyOptionIdentifier is specified by the caller. 
+
+        EducationalInstitutionCode identifier must match the educational
+        institution identifier part of the StudyOptionIdentifier, 
+
+        and the organization of the authenticated sender must have write access
+        to that educational institution.
+      tags:
+        - FormalStudyOption
+    put:
+      operationId: update-formal-studyoption
+      parameters:
+        - name: identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/FormalStudyOptionIdentifier'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFormalStudyOptionRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateFormalStudyOptionResponse'
+          description: Ok
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+      summary: Updates a Formal Study Option.
+      description: >
+        StudyOptionIdentifier is specified by the caller. 
+
+        StudyOptionIdentifier or educationalInstitutionCode cannot be modified.
+
+        EducationalInstitutionCode identifier must match the educational
+        institution identifier part of the StudyOptionIdentifier, 
+
+        and the organization of the authenticated sender must have write access
+        to that educational institution.
+      tags:
+        - FormalStudyOption
+  /formal-studyoption/list:
+    get:
+      operationId: list-formal-studyoptions
+      parameters:
+        - name: educational-institution-code
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/EducationalInstitutionCode'
+        - name: page
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Page'
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/PageSize'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetFormalStudyOptionsResponse'
+          description: Ok
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+      summary: Returns Formal Study Options of an Educational Institution.
+      description: >
+        Returns a page of Formal Study Options belonging to the indicated
+        Educational Institution.
+      tags:
+        - FormalStudyOption
+  /formal-studyoption-bundle:
+    post:
+      operationId: add-formal-studyoption-bundle
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddFormalStudyOptionBundleRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddFormalStudyOptionBundleResponse'
+          description: Created
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+      summary: Adds a Formal Study Option Bundle.
+      description: >
+        THIS IS A DRAFT ENDPOINT.
+
+        StudyOptionIdentifier is specified by the caller. 
+
+        EducationalInstitutionCode identifier must match the educational
+        institution identifier part of the StudyOptionIdentifier, 
+
+        and the organization of the authenticated sender must have write access
+        to that educational institution.
+      tags:
+        - FormalStudyOptionBundle
+  /formal-studyoption-instance:
+    get:
+      operationId: get-formal-studyoption-instance
+      parameters:
+        - name: identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/FormalStudyOptionInstanceIdentifier'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormalStudyOptionInstance'
+          description: Ok
+        '404':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Not Found
+      summary: Returns the specified Formal Study Option Instance.
+      description: >
+        Returns the Formal Study Option Instance indicated by the Study Option
+        Instance Identifier.
+      tags:
+        - FormalStudyOptionInstance
+    post:
+      operationId: add-formal-studyoption-instance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddFormalStudyOptionInstanceRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddFormalStudyOptionInstanceResponse'
+          description: Created
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+      summary: Adds a new Formal Study Option Instance.
+      description: >
+        THIS IS A DRAFT ENDPOINT.
+
+        StudyOptionInstanceIdentifier is specified by the caller. 
+
+        EducationalInstitutionCode identifier must match both the educational
+        institution identifier part of the StudyOptionInstanceIdentifier, 
+
+        and the organization of the authenticated sender.
+      tags:
+        - FormalStudyOptionInstance
+  /formal-studyoption-instance/list:
+    get:
+      operationId: list-formal-studyoption-instances
+      parameters:
+        - name: study-option-identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/FormalStudyOptionIdentifier'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetFormalStudyOptionInstancesResponse'
+          description: Ok
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+      summary: Returns Formal Study Option Instances of a Formal Study Option.
+      description: |
+        The results are not paged.
+      tags:
+        - FormalStudyOptionInstance
+  /informal-studyoption:
+    get:
+      operationId: get-informal-studyoption
+      parameters:
+        - name: identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/InformalStudyOptionIdentifier'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InformalStudyOption'
+          description: Ok
+        '404':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Not Found
+      summary: Returns the specified Informal Study Option.
+      description: >
+        Returns the Informal Study Option indicated by the Study Option
+        Identifier.
+      tags:
+        - InformalStudyOption
+    post:
+      operationId: add-informal-studyoption
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddInformalStudyOptionRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddInformalStudyOptionResponse'
+          description: Created
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+      summary: Adds an Informal Study Option.
+      description: >
+        Unsupported states: ARCHIVED and CANCELLED
+
+        StudyOptionIdentifier is specified by the caller. 
+
+        EducationalInstitutionCode identifier must match the educational
+        institution identifier part of the StudyOptionIdentifier, 
+
+        and the organization of the authenticated sender must have write access
+        to that educational institution.
+      tags:
+        - InformalStudyOption
+    put:
+      operationId: update-informal-studyoption
+      parameters:
+        - name: identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/InformalStudyOptionIdentifier'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInformalStudyOptionRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateInformalStudyOptionResponse'
+          description: Ok
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+      summary: Updates an Informal Study Option.
+      description: >
+        Unsupported states: ARCHIVED and CANCELLED
+
+        StudyOptionIdentifier is specified by the caller. 
+
+        StudyOptionIdentifier or educationalInstitutionCode cannot be modified.
+
+        EducationalInstitutionCode must match the educational institution code
+        part of the StudyOptionIdentifier, 
+
+        and the organization of the authenticated sender must have write access
+        to that educational institution.
+      tags:
+        - InformalStudyOption
+  /informal-studyoption/batch:
+    put:
+      summary: Add or update a batch of informal study options
+      description: Add or update multiple informal study options in the system as a batch.
+      operationId: add-or-update-informal-studyoptions
+      tags:
+        - InformalStudyOption
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddOrUpdateInformalStudyOptionsBatchRequest'
+      responses:
+        '200':
+          description: All informal study options updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddOrUpdateBatchResponse'
+        '201':
+          description: All informal study options created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddOrUpdateBatchResponse'
+        '207':
+          description: Informal study options added or updated with varying statuses
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddOrUpdateBatchResponse'
+        '400':
+          description: Bad request, invalid input.
+        '500':
+          description: Internal server error.
+  /informal-studyoption/list:
+    get:
+      operationId: list-informal-studyoptions
+      parameters:
+        - name: educational-institution-code
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/EducationalInstitutionCode'
+        - name: page
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Page'
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/PageSize'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetInformalStudyOptionsResponse'
+          description: Ok
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+      summary: Returns Informal Study Options of an Educational Institution.
+      description: >
+        Returns a page of Study Options belonging to the indicated Educational
+        Institution.
+      tags:
+        - InformalStudyOption
+  /informal-studyoption-instance:
+    get:
+      operationId: get-informal-studyoption-instance
+      parameters:
+        - name: identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/InformalStudyOptionInstanceIdentifier'
+        - name: include-attachment-contents
+          description: Whether to populate file contents in the attachments array.
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InformalStudyOptionInstance'
+          description: Ok
+        '404':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Not Found
+      summary: Returns the specified Informal Study Option Instance.
+      description: >
+        Returns the Informal Study Option Instance indicated by the Study Option
+        Instance Identifier.
+      tags:
+        - InformalStudyOptionInstance
+    post:
+      operationId: add-informal-studyoption-instance
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InformalStudyOptionInstance'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddInformalStudyOptionInstanceResponse'
+          description: Created
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+      summary: Adds a new Informal Study Option Instance.
+      description: >
+        Unsupported states: ARCHIVED and CANCELLED
+
+        StudyOptionInstanceIdentifier is specified by the caller. 
+
+        EducationalInstitutionCode identifier must match both the educational
+        institution identifier part of the StudyOptionInstanceIdentifier, 
+
+        and the organization of the authenticated sender.
+      tags:
+        - InformalStudyOptionInstance
+    put:
+      operationId: update-informal-studyoption-instance
+      parameters:
+        - name: identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/InformalStudyOptionInstanceIdentifier'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InformalStudyOptionInstance'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateInformalStudyOptionInstanceResponse'
+          description: Ok
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+      summary: Updates an Informal Study Option Instance.
+      description: >
+        Unsupported states: ARCHIVED and CANCELLED
+
+        StudyOptionInstanceIdentifier is specified by the caller. 
+
+        StudyOptionInstanceIdentifier or educationalInstitutionCode cannot be
+        modified.
+
+        EducationalInstitutionCode identifier must match both the educational
+        institution identifier part of the StudyOptionInstanceIdentifier, 
+
+        and the organization of the authenticated sender.
+      tags:
+        - InformalStudyOptionInstance
+  /informal-studyoption-instance/batch:
+    put:
+      summary: Add or update a batch of informal study option instances
+      description: >-
+        Add or update multiple informal study option instances in the system as
+        a batch.
+      operationId: add-or-update-informal-studyoption-instances
+      tags:
+        - InformalStudyOptionInstance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: >-
+                #/components/schemas/AddOrUpdateInformalStudyOptionInstancesBatchRequest
+      responses:
+        '200':
+          description: All informal study option instances updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddOrUpdateBatchResponse'
+        '201':
+          description: All informal study option instances created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddOrUpdateBatchResponse'
+        '207':
+          description: >-
+            Informal study option instances added or updated with varying
+            statuses
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddOrUpdateBatchResponse'
+        '400':
+          description: Bad request, invalid input.
+        '500':
+          description: Internal server error.
+  /informal-studyoption-instance/list:
+    get:
+      operationId: list-informal-studyoption-instances
+      parameters:
+        - name: study-option-identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/InformalStudyOptionIdentifier'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetInformalStudyOptionInstancesResponse'
+          description: Ok
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+      summary: Returns Informal Study Option Instances of an Informal Study Option.
+      description: |
+        The results are not paged.
+      tags:
+        - InformalStudyOptionInstance
+  /informal-studyoption-instance/attachments:
+    post:
+      operationId: add-informal-studyoption-instance-attachment
+      parameters:
+        - name: identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/InformalStudyOptionInstanceIdentifier'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentCreationResponse'
+          description: Created
+        '400':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Bad Request
+        '413':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Request entity too large
+        '415':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Unsupported media type
+      summary: Adds a file attachment to an Informal Study Option Instance.
+      description: >
+        Adds a file attachment and returns the UUID of the newly created file
+        attachment.
+
+        Maximum of three attachments are allowed.
+
+        The maximum size of the attachment is 10 MB, and the supported file
+        types are 
+
+        .pdf, .ppt, .pptx, .doc ja .docx.
+
+        Only Study Option Instances of type Event, Webinar and Seminar can have
+        attachments.
+      tags:
+        - InformalStudyOptionInstance
+  /informal-studyoption-instance/attachments/{file-id}:
+    delete:
+      operationId: delete-informal-studyoption-attachment
+      parameters:
+        - name: identifier
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/InformalStudyOptionInstanceIdentifier'
+        - name: file-id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/FileId'
+      responses:
+        '204':
+          description: The attachment was successfully deleted.
+        '404':
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: The File or the Study Option Instance was not found.
+      summary: Deletes a file attachment from an Informal Study Option Instance.
+      tags:
+        - InformalStudyOptionInstance
+components:
+  securitySchemes:
+    DigivisioBearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: DigivisioAccessToken
+  schemas:
+    AssessmentItemIdentifier:
+      description: >-
+        Global Assessment Item Identifier. The identifier starts with opinfi the
+        HEDI prefix including the educational institution identifier (a 5 digit
+        identifier) of the institution owning the assessment item followed by
+        the HEDI resource type "AssessmentItem" followed by an identifier unique
+        within the institution. For e.g.
+        hed://01909.opin.fi/AssessmentItem/aitem-12345 NOTE. Special characters
+        may be used with URL-encoding. Max length for identifier is 200
+        characters.
+      type: string
+      format: uri
+      example: hed://01909.opin.fi/AssessmentItem/aitem-12345
+      x-tags:
+        - v1_studyoption_formal
+    AssessmentItemTypeCode:
+      description: >
+        Assessment Item type.
+
+        Details of all valid values defined by the code system can be found from
+        the target environments code-system API (GET
+        <servers.url>/v1/code-system/assessment-item-type):
+            - E.g. Pilot env: https://api-pilotti-dev.opindev.fi/services/hedi/v1/code-system/assessment-item-type
+      type: string
+      pattern: urn:code:assessment-item-type:(\S{1,60})
+      example: urn:code:assessment-item-type:EXAM
+      x-tags:
+        - v1_studyoption_formal
+    LanguageCode:
+      description: >
+        A Language code URN containing the two letter language code as specified
+        by the koodiArvo field of
+        https://virkailija.opintopolku.fi/koodisto-service/rest/json/kieli/koodi
+      type: string
+      pattern: urn:code:kieli:..
+      example: urn:code:kieli:FI
+      x-tags:
+        - v1_common
+    Credit:
+      description: >-
+        Credit amount in ECTS European Credit Transfer and Accumulation System).
+        This value represents the number of credits earned, typically a decimal
+        number.
+      type: number
+      format: double
+      example: 5
+      x-tags:
+        - v1_studyoption_formal
+    CreditRange:
+      description: >
+        Schema for a CreditRange object, representing the minimum and maximum
+        values for a range of credits, along with the type of the range.
+
+        Typically represented in ECTS, the range may vary (e.g., 2-7 credits).
+
+        If only one value is provided, the range is assumed fixed (e.g., 2-2
+        credits means 2 credits).
+      required:
+        - min
+      type: object
+      properties:
+        min:
+          $ref: '#/components/schemas/Credit'
+          description: >-
+            The minimum number of credits that can be awarded for the completion
+            of the course or program.
+        max:
+          $ref: '#/components/schemas/Credit'
+          description: >-
+            The maximum number of credits that can be awarded for the completion
+            of the course or program.
+      x-tags:
+        - v1_studyoption_formal
+    ValidString:
+      description: General string schema with common validation rules
+      type: string
+      pattern: ^\S(?:.*\S)?$|^$
+      minLength: 1
+      maxLength: 50000
+    MarkupWithTranslations:
+      description: >-
+        Localized markdown markup for different languages. TODO Specify
+        supported markdown syntax.
+      type: object
+      required:
+        - translations
+      properties:
+        translations:
+          type: array
+          minItems: 1
+          items:
+            description: Language and corresponding markup.
+            type: object
+            required:
+              - language
+              - markup
+            properties:
+              language:
+                $ref: '#/components/schemas/LanguageCode'
+              markup:
+                description: Markup for the language
+                $ref: '#/components/schemas/ValidString'
+                example: '*Hei* vaan!'
+      example:
+        translations:
+          - language: urn:code:kieli:FI
+            markup: '*Hei* vaan!'
+          - language: urn:code:kieli:EN
+            markup: '**Hello** there!'
+          - language: urn:code:kieli:SV
+            markup: _Hej_ där!
+          - language: urn:code:kieli:DE
+            markup: '**Hallo!** Wie geht’s?'
+          - language: urn:code:kieli:ES
+            markup: ¡**Hola** amigo!
+      x-tags:
+        - v1_common
+    EducationalInstitutionCode:
+      description: >
+        A URN code containing the five digit identifier of a Finnish educational
+        institute (Oppilaitosnumero).
+
+        The identifiers are listed at
+        https://koski.opintopolku.fi/koski/dokumentaatio/koodisto/oppilaitosnumero/latest.
+
+        The value is immutable when used as a property.
+      type: string
+      pattern: urn:code:oppilaitosnumero:(\d{5})
+      example: urn:code:oppilaitosnumero:01909
+      x-tags:
+        - v1_common
+    TextWithTranslations:
+      type: object
+      required:
+        - translations
+      properties:
+        translations:
+          description: >
+            Localized text entries for multiple languages, including language
+            identifiers and corresponding
+
+            translations for consistent meaning.
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required:
+              - language
+              - text
+            properties:
+              language:
+                $ref: '#/components/schemas/LanguageCode'
+              text:
+                description: Text for the language.
+                $ref: '#/components/schemas/ValidString'
+                example: Hei vaan!
+      example:
+        translations:
+          - language: urn:code:kieli:FI
+            text: Hei vaan!
+          - language: urn:code:kieli:EN
+            text: Hello there!
+          - language: urn:code:kieli:SV
+            text: Hej där!
+          - language: urn:code:kieli:DE
+            text: Hallo!
+      x-tags:
+        - v1_common
+    FieldOfStudyCode:
+      description: >
+        A Classification Code URN containing the 1 or 2 digit code as specified
+        by the koodiArvo field of
+        https://virkailija.opintopolku.fi/koodisto-service/rest/json/okmohjauksenala/koodi
+      type: string
+      pattern: urn:code:okmohjauksenala:[0-9]{1,2}
+      example: urn:code:okmohjauksenala:1
+      x-tags:
+        - v1_common
+    AssessmentItem:
+      description: |
+        Assessment items (arviointikohde) defines parts for course completions.
+      type: object
+      required:
+        - assessmentItemType
+        - attainmentLanguages
+        - creditRange
+        - educationalInstitutionCode
+        - externalIdentifier
+        - identifier
+      properties:
+        assessmentItemType:
+          $ref: '#/components/schemas/AssessmentItemTypeCode'
+        attainmentLanguages:
+          description: >
+            Specifies the language in which a student completes their academic
+            coursework or requirements.
+          type: array
+          items:
+            $ref: '#/components/schemas/LanguageCode'
+        creditRange:
+          $ref: '#/components/schemas/CreditRange'
+        description:
+          description: Description for assessment item.
+          $ref: '#/components/schemas/MarkupWithTranslations'
+        educationalInstitutionCode:
+          description: Responsible organization
+          $ref: '#/components/schemas/EducationalInstitutionCode'
+        externalIdentifier:
+          description: An identifier provided by the organizing institution
+          type: string
+        gradingDescription:
+          description: Description of assessment item about grading.
+          $ref: '#/components/schemas/TextWithTranslations'
+          example:
+            translations:
+              - language: urn:code:kieli:EN
+                text: >-
+                  To achieve a grade of 5, focus on mastering the course
+                  material, engaging deeply with the content, and consistently
+                  producing high-quality work.
+        identifier:
+          $ref: '#/components/schemas/AssessmentItemIdentifier'
+        learningMaterial:
+          description: Learning materials for the assessment item
+          $ref: '#/components/schemas/MarkupWithTranslations'
+        name:
+          $ref: '#/components/schemas/TextWithTranslations'
+        studyFields:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldOfStudyCode'
+        studyFormat:
+          description: Study format description for assessment item.
+          $ref: '#/components/schemas/MarkupWithTranslations'
+      x-tags:
+        - v1_studyoption_formal
+    AddOrUpdateAssessmentItemsBatchRequest:
+      description: |
+        Request data to add or update a batch of assessment items.
+      type: array
+      minItems: 1
+      maxItems: 20
+      items:
+        $ref: '#/components/schemas/AssessmentItem'
+    HttpStatus:
+      description: |
+        HTTP status code representation
+      type: integer
+      example: 200
+    AddOrUpdateResult:
+      description: |
+        Result of added or updated resource.
+      type: object
+      required:
+        - identifier
+        - status
+      properties:
+        identifier:
+          type: string
+        status:
+          description: >
+            Represents the status of add or update operation, returns one of the
+            following 200, 201, 400, 424, 500
+
+            Status 424 occurs in cases when operation is cancelled due to other
+            entity fails in batch operation.
+          $ref: '#/components/schemas/HttpStatus'
+        message:
+          type: string
+      example:
+        identifier: hed://01909.opin.fi/CourseUnit/cunit-abcop
+        status: 200
+        message: Always http status 200 and same response despite of context.
+    AddOrUpdateBatchResponse:
+      description: |
+        Response of batch add or update operation.
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AddOrUpdateResult'
+    Page:
+      description: Which page to navigate to. Indexing starts from 0.
+      type: integer
+      format: int32
+      default: 0
+      minimum: 0
+      example: 0
+    PageSize:
+      description: How many results to fetch to a single page.
+      type: integer
+      format: int32
+      default: 20
+      minimum: 1
+      maximum: 100
+      example: 20
+    HttpMethods:
+      description: |
+        A list of supported HTTP methods for the resource.
+      type: string
+      enum:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+      x-tags:
+        - v1_info
+    HttpEndpoint:
+      description: |
+        Http endpoint containing method and path information
+      type: object
+      required:
+        - method
+        - path
+      properties:
+        method:
+          $ref: '#/components/schemas/HttpMethods'
+        path:
+          type: string
+          description: The path of the API endpoint.
+          example: /api/v1/assessment-items
+    CapabilityResources:
+      description: |
+        A list of supported resources for this API implementation.
+      type: string
+      enum:
+        - AssessmentItem
+        - CompletionOption
+        - CodeSystem
+        - CourseUnit
+        - CourseUnitRealization
+        - Enrolment
+        - FormalStudyOption
+        - InformalStudyOption
+        - InformalStudyOptionInstance
+      x-tags:
+        - v1_info
+    CapabilityStatement:
+      description: >
+        This capability statement provides a capability statement that details
+        the supported 
+
+        resources and methods for this API implementation.
+      type: object
+      required:
+        - supportedEndpoints
+        - supportedResources
+      properties:
+        supportedEndpoints:
+          type: array
+          items:
+            type: object
+            required:
+              - endpoints
+              - resource
+            properties:
+              endpoints:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HttpEndpoint'
+                description: A list of supported endpoints.
+              resource:
+                $ref: '#/components/schemas/CapabilityResources'
+                description: The resource type supported by the API.
+        supportedResources:
+          type: array
+          items:
+            $ref: '#/components/schemas/CapabilityResources'
+          example:
+            - CompletionOption
+            - FormalStudyOption
+            - InformalStudyOption
+      x-tags:
+        - v1_info
+    CodeSystem:
+      description: >
+        An abridged version of the Code System for listing Code Systems. Does
+        not contain the actual Codes.
+      type: object
+      required:
+        - identifier
+        - name
+      properties:
+        identifier:
+          description: The identifier is a part of each Code URN in the Code System.
+          example: virtalukukausiilmtila
+          type: string
+        description:
+          description: A description for finding out the meaning of the Code System.
+          $ref: '#/components/schemas/TextWithTranslations'
+        name:
+          description: A short name used for listing.
+          $ref: '#/components/schemas/TextWithTranslations'
+      x-tags:
+        - v1_codesystem
+    CodeSystemList:
+      description: |
+        A list of abridged Code Systems without Codes.
+      type: array
+      items:
+        $ref: '#/components/schemas/CodeSystem'
+      x-tags:
+        - v1_codesystem
+    Problem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri-reference
+          description: >
+            A URI reference that uniquely identifies the problem type only in
+            the context of the provided API. Opposed to the specification in
+            RFC-9457, it is neither recommended to be dereferenceable and point
+            to a human-readable documentation nor globally unique for the
+            problem type.
+          default: about:blank
+          example: /some/uri-reference
+        title:
+          type: string
+          description: >
+            A short summary of the problem type. Written in English and readable
+            for engineers, usually not suited for non technical stakeholders and
+            not localized.
+          example: some title for the error situation
+        status:
+          type: integer
+          format: int32
+          description: >
+            The HTTP status code generated by the origin server for this
+            occurrence of the problem.
+          minimum: 100
+        detail:
+          type: string
+          description: >
+            A human readable explanation specific to this occurrence of the
+            problem that is helpful to locate the problem and give advice on how
+            to proceed. Written in English and readable for engineers, usually
+            not suited for non technical stakeholders and not localized.
+          example: some description for the error situation
+        instance:
+          type: string
+          format: uri-reference
+          description: >
+            A URI reference that identifies the specific occurrence of the
+            problem, e.g. by adding a fragment identifier or sub-path to the
+            problem type. May be used to locate the root of this problem in the
+            source code.
+          example: /some/uri-reference#specific-occurrence-context
+        traceId:
+          type: string
+          description: >
+            A request ID that can be used to search for log events related to
+            the problem.
+    CodeSystemCode:
+      description: >
+        The code urn is wrapped into "CodeSystemCode" in order to have it
+        manifest as a typed object in generated clients
+
+        instead of just a string. Also, fields with code urn values can and
+        should use the same approach, and can
+
+        extend this and override "example" and "pattern".
+      type: object
+      required:
+        - urn
+      properties:
+        urn:
+          description: >
+            We are using the term "urn" a bit laxly, as "code" is not an IANA
+            registered namespace, and 
+
+            thus global uniqueness is not guaranteed.
+          example: urn:code:virtalukukausiilmtila:2
+          pattern: urn:code:.+
+          type: string
+      x-tags:
+        - v1_codesystem
+    Code:
+      description: A Code of a Code System.
+      type: object
+      required:
+        - codeSystemCode
+        - metadata
+        - status
+      properties:
+        codeSystemCode:
+          description: The actual code urn is wrapped in "CodeSystemCode".
+          $ref: '#/components/schemas/CodeSystemCode'
+        metadata:
+          description: Human readable information regarding the Code.
+          type: object
+          required:
+            - name
+          properties:
+            description:
+              $ref: '#/components/schemas/TextWithTranslations'
+            name:
+              $ref: '#/components/schemas/TextWithTranslations'
+            shortName:
+              $ref: '#/components/schemas/TextWithTranslations'
+        status:
+          description: >
+            ACCEPTED indicates that the code value will not change but metadata
+            can still change.
+
+            DRAFT indicates that the code value or its metadata can still get
+            some changes.
+
+            PASSIVE indicates that the code value is not in use (deprecated) and
+            thus cannot be used anymore.
+
+            For more details about OPH code system code states refer to OPH
+            documentation:
+            https://wiki.eduuni.fi/display/OPHPALV/Koodistojen+ja+koodien+versioituminen
+          type: string
+          enum:
+            - ACCEPTED
+            - DRAFT
+            - PASSIVE
+      x-tags:
+        - v1_codesystem
+    CodeSystemWithCodes:
+      description: |
+        A Code System contains a set of Codes.
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/CodeSystem'
+        - type: object
+          required:
+            - codes
+          properties:
+            codes:
+              type: array
+              items:
+                $ref: '#/components/schemas/Code'
+      x-tags:
+        - v1_codesystem
+    CompletionOptionIdentifier:
+      description: >-
+        Global Completion Option Identifier. The identifier starts with opinfi
+        the HEDI prefix including the educational institution identifier (a 5
+        digit identifier) of the institution owning the completion option
+        followed by the HEDI resource type "CompletionOption" followed by an
+        identifier unique within the institution. For e.g.
+        hed://01909.opin.fi/CompletionOption/coption-12345 NOTE. Special
+        characters may be used with URL-encoding. Max length for identifier is
+        200 characters.
+      type: string
+      format: uri
+      example: hed://01909.opin.fi/CompletionOption/coption-12345
+      x-tags:
+        - v1_studyoption_formal
+    AssessmentItemContextDefinition:
+      description: >
+        Assessment items are components that define parts of course completions.
+        They may include meta information on how the assessment item should be
+        handled
+
+        within the context of course realization (via CompletionOption).
+
+
+        For example, An assessment item can be mandatory for a specific course:
+          * In the Programming A course realization, AssessmentItemXYZ:exam is a mandatory element.
+          * In the Programming B course realization, AssessmentItemXYZ:exam is optional but can still be completed.
+      type: object
+      required:
+        - assessmentItemIdentifier
+        - mandatory
+      properties:
+        assessmentItemIdentifier:
+          $ref: '#/components/schemas/AssessmentItemIdentifier'
+        mandatory:
+          description: >
+            Indicates whether assessment item is mandatory to be completed for
+            specific course realization. 
+
+            If true, students must complete the assessment item.
+          type: boolean
+          example: true
+    CompletionOption:
+      description: |
+        Completion option for the study element.
+      type: object
+      required:
+        - assessmentItemContextDefinitions
+        - externalIdentifier
+        - identifier
+      properties:
+        identifier:
+          $ref: '#/components/schemas/CompletionOptionIdentifier'
+        externalIdentifier:
+          description: Identifier in Educational Institution context
+          type: string
+          example: 6ed825c0-92cd-4161-bf0e-a55cd35d4982
+        assessmentItemContextDefinitions:
+          description: >-
+            A list of assessment items, including their mandatory status, used
+            in this completion option mapping.
+          type: array
+          items:
+            $ref: '#/components/schemas/AssessmentItemContextDefinition'
+            example:
+              - assessmentItemIdentifier: hed://01909.opin.fi/AssessmentItem/ai-87543987
+                mandatory: true
+              - assessmentItemIdentifier: hed://01909.opin.fi/AssessmentItem/ai-456353
+                mandatory: false
+        completionOptionDescription:
+          description: The description of this completion option.
+          $ref: '#/components/schemas/MarkupWithTranslations'
+          example:
+            translations:
+              - language: urn:code:kieli:EN
+                markup: >-
+                  Functional classroom teaching is organized at a specific time,
+                  and participation requires your physical presence on-site as
+                  well as active and constructive interaction. In classroom
+                  teaching, you will have the opportunity to share your thoughts
+                  and experiences with both the teacher and other students. In
+                  addition to participating in the teaching, you will write a
+                  learning diary based on the session. Classroom teaching may
+                  also include pre- or post-assignments. In the learning task,
+                  you will independently complete either one extensive task or
+                  several limited tasks based on the assignment and source
+                  material. You can schedule your studies within the allowed
+                  completion period. The course is completed when both
+                  assessment items have been evaluated as satisfactory or with a
+                  minimum grade of 1. The course grade is determined based on
+                  the grade of the learning task.
+        evaluationCriteria:
+          description: Describe evaluation criteria for this completion option.
+          $ref: '#/components/schemas/TextWithTranslations'
+          example:
+            translations:
+              - language: urn:code:kieli:EN
+                text: >
+                  Show understanding via active participation and written
+                  assignments.
+        prerequisites:
+          description: Prerequisites for the completion option.
+          $ref: '#/components/schemas/TextWithTranslations'
+      example:
+        identifier: hed://01909.opin.fi/CompletionOption/option-abc
+        externalIdentifier: 6ed825c0-92cd-4161-bf0e-a55cd35d4982
+        assessmentItemContextDefinitions:
+          - assessmentItemIdentifier: hed://01909.opin.fi/AssessmentItem/ai-87543987
+            mandatory: true
+          - assessmentItemIdentifier: hed://01909.opin.fi/AssessmentItem/ai-456353
+            mandatory: false
+        completionOptionDescription:
+          translations:
+            - language: urn:code:kieli:EN
+              markup: >-
+                Attend in person and complete the tasks to pass. Includes
+                lectures, group work, and final assessment.
+        evaluationCriteria:
+          translations:
+            - language: urn:code:kieli:EN
+              text: >-
+                Students must actively participate and complete all assignments
+                with a passing grade.
+        prerequisites:
+          translations:
+            - language: urn:code:kieli:EN
+              text: Basic programming knowledge required.
+      x-tags:
+        - v1_studyoption_formal
+    CourseUnitIdentifier:
+      description: >-
+        Global Course Unit Identifier. The identifier starts with opinfi the
+        HEDI prefix including the educational institution identifier (a 5 digit
+        identifier) of the institution owning the course unit followed by the
+        HEDI resource type "CourseUnit" followed by an identifier unique within
+        the institution. For e.g. hed://01909.opin.fi/CourseUnit/cunit-12345
+        NOTE. Special characters may be used with URL-encoding. Max length for
+        identifier is 200 characters.
+      type: string
+      format: uri
+      example: hed://01909.opin.fi/CourseUnit/cunit-12345
+      x-tags:
+        - v1_studyoption_formal
+    PersonName:
+      description: |
+        Schema for a Person name
+      type: object
+      required:
+        - firstNames
+        - lastName
+      properties:
+        firstNames:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidString'
+            description: The first name of the person.
+        lastName:
+          $ref: '#/components/schemas/ValidString'
+          description: The last name of the person.
+      x-tags:
+        - v1_common
+    PhoneNumber:
+      description: |
+        Schema for a Phone number details.
+      type: object
+      required:
+        - countryCode
+        - phoneNumber
+      properties:
+        countryCode:
+          type: string
+          description: |
+            The country code for the phone number without plus sign.
+          example: '358'
+        phoneNumber:
+          type: string
+          description: |
+            Number without country code.
+          example: '401234567'
+      x-tags:
+        - v1_common
+    PersonRoleCode:
+      description: >
+        A URN code containing the person role.
+
+        Details of all valid values defined by the code system can be found from
+        the target environments code-system API (GET
+        <servers.url>/v1/code-system/person-role):
+          - E.g. Pilot env: https://api-pilotti-dev.opindev.fi/services/hedi/v1/code-system/person-role
+      type: string
+      pattern: urn:code:person-role:(\S{1,60})
+      example: urn:code:person-role:administrative-person
+      x-tags:
+        - v1_common
+    ContactDetails:
+      description: Contact details basic data
+      type: object
+      required:
+        - contactName
+        - role
+      properties:
+        externalIdentifier:
+          type: string
+          description: >-
+            An identifier that allows the educational organization to uniquely
+            identify the original data in its own environment.
+          example: person.11221.111
+        emailAddress:
+          description: Email address
+          type: string
+          format: email
+          example: firstname.lastname@foo.bar.invalid
+        contactName:
+          $ref: '#/components/schemas/PersonName'
+        phoneNumber:
+          $ref: '#/components/schemas/PhoneNumber'
+        role:
+          description: Role of the contact
+          $ref: '#/components/schemas/PersonRoleCode'
+      example:
+        externalIdentifier: person.11221.111
+        emailAddress: firstname.lastname@foo.bar.invalid
+        contactName:
+          firstNames:
+            - First
+            - Middle
+          lastName: Lastname
+        phoneNumber:
+          countryCode: '+358'
+          phoneNumber: '401234567'
+        role: urn:code:person-role:administrative-person
+      x-tags:
+        - v1_common
+    ContactPerson:
+      description: Contact person with required identifiers
+      allOf:
+        - $ref: '#/components/schemas/ContactDetails'
+        - type: object
+          required:
+            - externalIdentifier
+    CurriculumStateCode:
+      description: >
+        A URN code containing the curriculum study element state (NOTE. draft
+        and ready states are not supported).
+
+        Details of all valid values defined by the code system can be found from
+        the target environments code-system API (GET
+        <servers.url>/v1/code-system/curriculum-state):
+          - E.g. Pilot env: https://api-pilotti-dev.opindev.fi/services/hedi/v1/code-system/curriculum-state
+      type: string
+      pattern: urn:code:curriculum-state:(active|deleted|cancelled|archived)
+      example: urn:code:curriculum-state:active
+    StudyLevelCode:
+      description: |
+        Study Level for Study Option. TODO: Mikä koodisto oikeasti?
+      type: string
+      pattern: urn:code:study-level:(\S{1,60})
+      example: urn:code:study-level:TODO
+      x-tags:
+        - v1_studyoption_formal
+    OffsetDateTime:
+      description: >
+        The date and time in ISO 8601 format.
+
+        Example explained:
+
+        - The date is represented as YYYY-MM-DD.
+
+        - The time is in 24-hour format (HH:MM:SS).
+
+        - The timezone offset. In example, the 'Z' at the end indicates that the
+        time is in UTC (Coordinated Universal Time)
+      type: string
+      format: date-time
+      example: '2022-11-01T00:00:00Z'
+      x-tags:
+        - v1_common
+    OffsetDateTimeRange:
+      description: A date-time range with UTC offset.
+      required:
+        - start
+      type: object
+      properties:
+        start:
+          description: >
+            The inclusive start date of the range specifies the beginning point
+            of a time interval.
+
+            This date is represented in ISO 8601 format, which includes the
+            date, time, and a UTC offset.
+
+            The UTC offset indicates the difference from Coordinated Universal
+            Time (UTC),
+
+            allowing for accurate time representation across different time
+            zones.
+          $ref: '#/components/schemas/OffsetDateTime'
+        endExclusive:
+          description: >
+            The optional exclusive end date of the range indicates the point at
+            which the time interval concludes, 
+
+            but does not include this date itself in the range. This means that
+            any events or data
+
+            occurring on this date are not considered part of the range.
+
+            The date should be formatted according to ISO 8601 standards, which
+            includes the date, time,
+
+            and a UTC offset to specify the time zone.
+          $ref: '#/components/schemas/OffsetDateTime'
+      x-tags:
+        - v1_common
+    CourseUnit:
+      description: >
+        Course Unit contains information of course (Opintojakso).
+
+
+        A specific part of studies that deals with a particular area of
+        expertise, topic, or content, which can be completed separately and has
+        defined scope and objectives.
+
+        (Reference and unofficially translated from
+        https://sanastot.suomi.fi/terminology/oksa/concept/c264 )
+      type: object
+      required:
+        - completionOptions
+        - creditRange
+        - educationalInstitutionCode
+        - externalIdentifier
+        - identifier
+        - name
+        - state
+        - validityPeriod
+      properties:
+        additionalInformation:
+          description: >
+            This field provides supplementary details and context related to the
+            primary data. It is intended to capture
+
+            any relevant information that enhances understanding, including
+            explanations, clarifications, or additional
+
+            notes that may be necessary for comprehensive interpretation.
+          $ref: '#/components/schemas/MarkupWithTranslations'
+        code:
+          type: string
+          description: The code identifying the course unit from original source.
+          example: ODKP1190
+        completionLanguages:
+          type: array
+          items:
+            $ref: '#/components/schemas/LanguageCode'
+          description: |
+            The languages in which the course can be completed.
+            Language codes retrieved from a coding system.
+        completionOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompletionOption'
+          description: >
+            A list of all possible completion methods for this course unit. 
+
+            Example methods include attending lectures, exams, internships, or
+            recognition of prior learning.
+        contactDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactPerson'
+        content:
+          $ref: '#/components/schemas/MarkupWithTranslations'
+          description: A detailed description of the course content.
+        creditRange:
+          $ref: '#/components/schemas/CreditRange'
+        creditsDescription:
+          description: >-
+            Textual explanation how credits are earned when minimum and maximum
+            are defined. How learner can achieve maximum credits.
+          $ref: '#/components/schemas/MarkupWithTranslations'
+        educationalInstitutionCode:
+          description: Responsible organization
+          $ref: '#/components/schemas/EducationalInstitutionCode'
+        evaluationScale:
+          type: string
+          description: >-
+            Evaluation scale used for the realization (to be determined by
+            schema definition).
+        externalIdentifier:
+          type: string
+          description: An identifier provided by the organizing institution.
+          example: otm-2278f170-d8d0-4bf4-8e31-7b0e7f512f96
+        identifier:
+          $ref: '#/components/schemas/CourseUnitIdentifier'
+          description: The HED identifier for the course unit, acting as a node reference.
+          example: hed://01909.opin.fi/CourseUnit/2278f170-d8d0-4bf4-8e31-7b0e7f512f96
+        inclusionApplicationInstruction:
+          description: Content compatibility instructions for the course unit
+          $ref: '#/components/schemas/MarkupWithTranslations'
+        ingress:
+          description: >
+            A brief description that encapsulates the main idea or purpose of
+            the data object, allowing users to quickly
+
+            grasp its significance.
+          $ref: '#/components/schemas/TextWithTranslations'
+        keywords:
+          description: >-
+            Keywords describing the course content, used mainly for query
+            support.
+          type: array
+          items:
+            type: string
+        learningMaterial:
+          description: Learning materials for the course unit
+          $ref: '#/components/schemas/MarkupWithTranslations'
+        name:
+          description: Visible names for course unit with language translations.
+          $ref: '#/components/schemas/TextWithTranslations'
+          example:
+            translations:
+              - language: urn:code:kieli:EN
+                text: 'General Literature: Lyric Poetry and Drama'
+        objective:
+          $ref: '#/components/schemas/MarkupWithTranslations'
+          description: >
+            Description of the course objectives, detailing what students should
+            achieve upon completion.
+          example:
+            translations:
+              - language: urn:code:kieli:EN
+                text: >
+                  - Understand key works of general literature's lyric poetry
+                  and drama.
+
+                  - Apply analytical skills in interpreting poetry and drama.
+
+                  - Contextualize works within literary history.
+        prerequisites:
+          description: Prerequisites for the course unit
+          $ref: '#/components/schemas/MarkupWithTranslations'
+        state:
+          $ref: '#/components/schemas/CurriculumStateCode'
+        studyFields:
+          description: |
+            The field of study (from a predefined code set).
+            Example values are retrieved from the specified coding system.
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldOfStudyCode'
+        studyLevel:
+          description: The level of study, retrieved from a coding system.
+          example: urn:code:study-level:3
+          $ref: '#/components/schemas/StudyLevelCode'
+        validityPeriod:
+          $ref: '#/components/schemas/OffsetDateTimeRange'
+          description: >
+            The validity period of the course unit. If the validity period is
+            not provided in the source data, it could be assumed to start from
+            the data transfer date.
+      example:
+        identifier: hed://01909.opin.fi/CourseUnit/cunit-abc
+        externalIdentifier: otm-2278f170-d8d0-4bf4-8e31-7b0e7f512f96
+        educationalInstitutionCode: urn:code:oppilaitosnumero:01909
+        name:
+          translations:
+            - language: urn:code:kieli:EN
+              text: Introduction to Programming
+            - language: urn:code:kieli:FI
+              text: Ohjelmoinnin perusteet
+        creditRange:
+          min: 5
+          max: 5
+        state: urn:code:curriculum-state:active
+        validityPeriod:
+          start: '2024-08-01T00:00:00Z'
+          endExclusive: '2025-08-01T00:00:00Z'
+        completionOptions:
+          - identifier: hed://01909.opin.fi/CompletionOption/option-abc
+            externalIdentifier: 6ed825c0-92cd-4161-bf0e-a55cd35d4982
+            assessmentItemContextDefinitions:
+              - assessmentItemIdentifier: hed://01909.opin.fi/AssessmentItem/ai-87543987
+                mandatory: true
+              - assessmentItemIdentifier: hed://01909.opin.fi/AssessmentItem/ai-456353
+                mandatory: false
+            completionOptionDescription:
+              translations:
+                - language: urn:code:kieli:EN
+                  markup: This option includes lectures and a final exam.
+            evaluationCriteria:
+              translations:
+                - language: urn:code:kieli:EN
+                  text: >-
+                    Students must pass the final exam and attend 80% of
+                    lectures.
+            prerequisites:
+              translations:
+                - language: urn:code:kieli:EN
+                  text: No prior knowledge required.
+      x-tags:
+        - v1_studyoption_formal
+    AddOrUpdateCourseUnitsBatchRequest:
+      description: |
+        Request data to add or update a batch of course units.
+      type: array
+      minItems: 1
+      maxItems: 20
+      items:
+        $ref: '#/components/schemas/CourseUnit'
+    CourseUnitRealizationIdentifier:
+      description: >-
+        Global Course Unit Realization Identifier. The identifier starts with
+        opinfi the HEDI prefix including the educational institution identifier
+        (a 5 digit identifier) of the institution owning the course unit
+        realization followed by the HEDI resource type "CourseUnit" followed by
+        an identifier unique within the institution. For e.g.
+        hed://01909.opin.fi/CourseUnitRealization/cunit-realization-12345 NOTE.
+        Special characters may be used with URL-encoding. Max length for
+        identifier is 200 characters.
+      type: string
+      format: uri
+      example: hed://01909.opin.fi/CourseUnitRealization/cunit-realization-12345
+      x-tags:
+        - v1_studyoption_formal
+    WebLinkWithTranslations:
+      description: >-
+        Schema for a link with translations object, including language, optional
+        order, display text, and web address.
+      type: object
+      required:
+        - translations
+      properties:
+        translations:
+          description: >
+            Web link entries for multiple languages, including language,
+            optional order, display text, and web address.
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required:
+              - language
+              - webAddress
+            properties:
+              language:
+                $ref: '#/components/schemas/LanguageCode'
+                description: ''
+              displayText:
+                $ref: '#/components/schemas/ValidString'
+                description: >
+                  The display text for the link in the specified language.
+                  Optional, as the receiving
+
+                  system may display links as plain URLs without this text.
+                  Sending systems might not
+
+                  always provide this text.
+                example: >-
+                  Link on the website - See more information from the education
+                  provider >>
+              webAddress:
+                type: string
+                format: uri
+                description: The web address (URL) for the link.
+                example: https://www.jyu.fi/en/more-information
+              order:
+                type: integer
+                description: >
+                  The preferred order for displaying links with the same
+                  meaning. Meaning is from name of the field (at least
+                  currently).
+                example: 1
+      example:
+        translations:
+          - language: urn:code:kieli:FI
+            displayText: Lisätietoja oppilaitoksen sivuilta >>
+            webAddress: https://www.jyu.fi/fi/lisatietoa
+            order: 1
+          - language: urn:code:kieli:EN
+            displayText: More information from the education provider >>
+            webAddress: https://www.jyu.fi/en/more-information
+            order: 1
+          - language: urn:code:kieli:SV
+            displayText: Mer information från utbildningsanordnaren >>
+            webAddress: https://www.jyu.fi/sv/mer-information
+            order: 1
+          - language: urn:code:kieli:DE
+            displayText: Mehr Informationen vom Bildungsanbieter >>
+            webAddress: https://www.jyu.fi/de/mehr-informationen
+            order: 1
+      x-tags:
+        - v1_common
+    Coordinates:
+      description: >
+        Schema for a Coordinates object, representing geographical location. The
+        coordinate reference system is GeoJSON coordinates, 
+
+        which uses the World Geodetic System 1984 (WGS 84) [WGS84] datum, with
+        longitude and latitude units of decimal degrees.
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: number
+          format: double
+          description: |
+            The latitude of the location in decimal degrees.
+          example: 60.1699
+        longitude:
+          type: number
+          format: double
+          description: |
+            The longitude of the location in decimal degrees.
+          example: 24.9384
+      x-tags:
+        - v1_common
+    AddressTypeCode:
+      description: >
+        A Address code URN containing meaning of provided address from Code
+        system.
+      type: string
+      pattern: urn:code:address-type:(\S{1,60})
+      example: urn:code:address-type:visit
+      x-tags:
+        - v1_common
+    Address:
+      description: >
+        Schema for an Address object, representing physical address details for
+        a location, including street address, city, postal code, country, and
+        optional metadata.
+      type: object
+      required:
+        - streetAddress
+        - city
+        - postalCode
+        - country
+      properties:
+        streetAddress:
+          $ref: '#/components/schemas/ValidString'
+          description: |
+            The street address of the location.
+          example: Yliopistonkatu 4
+        city:
+          $ref: '#/components/schemas/ValidString'
+          description: |
+            The city or municipality where the event or location is situated.
+          example: Helsinki
+        municipalityCode:
+          $ref: '#/components/schemas/ValidString'
+          description: |
+            The municipality code, if applicable.
+          example: '061'
+        postalCode:
+          type: string
+          description: |
+            The postal code of the address.
+          example: '00100'
+        country:
+          type: string
+          description: >
+            The country of the address, using the ISO 3166-1 alpha-2 two-letter
+            country code.
+          example: FI
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+          description: >
+            The geographical coordinates of the location. Useful for map
+            visualizations or pinpointing specific buildings on a campus.
+        type:
+          $ref: '#/components/schemas/AddressTypeCode'
+        additionalInformation:
+          $ref: '#/components/schemas/MarkupWithTranslations'
+          description: >
+            Additional information related to the address, potentially
+            localized.
+          example:
+            translations:
+              - language: urn:code:kieli:EN
+                markup: The visiting address is next to the main building entrance.
+      x-tags:
+        - v1_common
+    Space:
+      description: >
+        Schema for a Space object, representing details about a specific room or
+        area within a building, including room number, floor, and directions.
+      type: object
+      properties:
+        roomNumber:
+          $ref: '#/components/schemas/ValidString'
+          description: |
+            The room number or other identifier for the space, if available.
+          example: A203
+        directions:
+          $ref: '#/components/schemas/TextWithTranslations'
+          description: >
+            Detailed instructions for locating the space, such as directions
+            from an elevator or staircase.
+          example:
+            translations:
+              - language: urn:code:kieli:EN
+                text: Go to the second floor with elevator A and turn left.
+      x-tags:
+        - v1_common
+    TransportationTypeCode:
+      description: >
+        A URN code containing the public transportation type.
+
+        Details of all valid values defined by the code system can be found from
+        the target environments code-system API (GET
+        <servers.url>/v1/code-system/transportation-type):
+          - E.g. Pilot env: https://api-pilotti-dev.opindev.fi/services/hedi/v1/code-system/transportation-type
+      type: string
+      pattern: urn:code:transportation-type:(\S{1,60})
+      example: urn:code:transportation-type:tram
+      x-tags:
+        - v1_common
+    PublicTransportation:
+      description: >
+        Schema for a PublicTransportation object, representing details about a
+        specific type of public transportation and its description.
+      type: object
+      required:
+        - type
+        - description
+      properties:
+        type:
+          $ref: '#/components/schemas/TransportationTypeCode'
+          description: >
+            The type of public transportation, defined by a controlled
+            vocabulary. 
+
+            For example, tram, bus, or train.
+          example: urn:code:transportation-type:tram
+        description:
+          $ref: '#/components/schemas/TextWithTranslations'
+          description: >
+            Information about the selected type of public transportation, such
+            as lines or stops.
+          example:
+            translations:
+              - language: urn:code:kieli:FI
+                text: Raitiovaunulinjat 4 ja 10 pysähtyvät Yliopistonkadulla.
+      x-tags:
+        - v1_common
+    Transportation:
+      description: >
+        Schema for a Transportation object, providing details about public
+        transportation, cycling options, and walking instructions for accessing
+        a location.
+      type: object
+      properties:
+        publicTransportation:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicTransportation'
+          description: >
+            Details about available public transportation options, such as bus,
+            train, or tram lines.
+        cycling:
+          $ref: '#/components/schemas/TextWithTranslations'
+          description: >
+            Information about cycling to the location, such as bicycle racks or
+            dedicated paths.
+          example:
+            translations:
+              - language: urn:code:kieli:FI
+                text: Lockable bicycle racks to the right of the main entrance.
+        walkingInstructions:
+          $ref: '#/components/schemas/TextWithTranslations'
+          description: |
+            Guidance on arriving at the location on foot.
+          example:
+            translations:
+              - language: urn:code:kieli:FI
+                text: A 10-minute walk from the central square.
+      x-tags:
+        - v1_common
+    Location:
+      description: >
+        Schema for a Location object, representing a physical location with
+        details about address, building, space, access, and transportation
+        instructions.
+      type: object
+      required:
+        - address
+      properties:
+        address:
+          $ref: '#/components/schemas/Address'
+          description: >
+            The physical address of the location, structured according to the
+            Address schema.
+        building:
+          $ref: '#/components/schemas/TextWithTranslations'
+          description: >
+            Information about the building, such as its name or specific
+            identification.
+          example:
+            translations:
+              - language: urn:code:kieli:EN
+                text: Main building
+        space:
+          $ref: '#/components/schemas/Space'
+          description: >
+            Details about the specific space within the building, such as a
+            room, hall, or other area.
+        accessDoor:
+          $ref: '#/components/schemas/TextWithTranslations'
+          description: >
+            Guidance regarding the access door, for example, specifying which
+            door is open.
+          example:
+            translations:
+              - language: urn:code:kieli:EN
+                text: Main entrance
+        drivingInstructions:
+          $ref: '#/components/schemas/TextWithTranslations'
+          description: |
+            Driving directions to the location, if applicable.
+          example:
+            translations:
+              - language: urn:code:kieli:EN
+                text: >-
+                  Some specific instructions which can not be found from GPS
+                  instructions like the entrance to the hidden parking lot is at
+                  the end of the driveway, behind the blue house.
+        parking:
+          $ref: '#/components/schemas/TextWithTranslations'
+          description: >
+            Information and instructions about parking options near the
+            location.
+          example:
+            translations:
+              - language: urn:code:kieli:EN
+                text: >-
+                  The parking area near the main entrance is paid from 7 AM to 6
+                  PM.
+        otherTransportation:
+          $ref: '#/components/schemas/Transportation'
+          description: >
+            Information about other transportation options, such as trains,
+            trams, taxis, bicycles, or walking.
+        additionalInformation:
+          $ref: '#/components/schemas/TextWithTranslations'
+          description: >
+            Other noteworthy instructions or details related to accessing the
+            location.
+          example:
+            translations:
+              - language: urn:code:kieli:EN
+                text: >-
+                  Bring your driver’s license or ID card to obtain a visitor
+                  permit.
+      x-tags:
+        - v1_common
+    CourseUnitRealizationTypeCode:
+      description: >
+        A URN code containing the course unit realization type.
+
+        Details of all valid values defined by the code system can be found from
+        the target environments code-system API (GET
+        <servers.url>/v1/code-system/course-unit-realization-type):
+          - E.g. Pilot env: https://api-pilotti-dev.opindev.fi/services/hedi/v1/code-system/course-unit-realization-type
+      type: string
+      pattern: urn:code:course-unit-realisation-type:(\S{1,60})
+      example: urn:code:course-unit-realisation-type:exam
+      x-tags:
+        - v1_studyoption_formal
+    CourseUnitRealization:
+      description: |
+        Course Unit Realization
+        Opintojakson toteutus
+      type: object
+      required:
+        - assessmentItemIdentifiers
+        - contactDetails
+        - continuousEnrolment
+        - educationalInstitutionCode
+        - externalIdentifier
+        - identifier
+        - locations
+        - name
+        - realizationType
+        - state
+        - teachingLanguages
+        - validityPeriod
+      properties:
+        additionalInformation:
+          description: >
+            This field provides supplementary details and context related to the
+            primary data. It is intended to capture
+
+            any relevant information that enhances understanding, including
+            explanations, clarifications, or additional
+
+            notes that may be necessary for comprehensive interpretation.
+          $ref: '#/components/schemas/MarkupWithTranslations'
+          example:
+            translations:
+              - language: urn:code:kieli:EN
+                markup: >-
+                  Quota of free seats available for JYU degree students.
+                  Separate application required for participation.
+        assessmentItemIdentifiers:
+          description: Reference to Assessment Items
+          type: array
+          items:
+            $ref: '#/components/schemas/AssessmentItemIdentifier'
+        code:
+          type: string
+          description: >-
+            The code identifying the course unit realization from original
+            source.
+          example: ODKP1190
+        contactDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactPerson'
+          description: >
+            Contact details for responsible persons or organizing entities.
+
+            The service displaying the data determines whether to use these
+            details or those linked to the offering or course.
+        continuousEnrolment:
+          type: boolean
+          description: >
+            Indicates whether continuous enrolment is allowed for the
+            realization.
+
+            If true, students can enroll at any time within the defined
+            enrolment period, with immediate confirmation.
+          example: true
+        educationalInstitutionCode:
+          $ref: '#/components/schemas/EducationalInstitutionCode'
+          description: Responsible organization
+        enrolmentCancellationEnd:
+          $ref: '#/components/schemas/OffsetDateTime'
+          description: Last date and time to cancel enrolment for the realization.
+          example: '2024-10-29T07:19:48.910Z'
+        enrolmentPeriod:
+          $ref: '#/components/schemas/OffsetDateTimeRange'
+          description: The period during which enrolments for the realization are open.
+          example:
+            start: '2023-12-31T22:00:00Z'
+            endExclusive: '2025-06-30T20:59:00Z'
+        evaluationScale:
+          $ref: '#/components/schemas/ValidString'
+          description: >-
+            Evaluation scale used for the realization (to be determined by
+            schema definition).
+        externalEnrolmentLink:
+          $ref: '#/components/schemas/WebLinkWithTranslations'
+          description: Web link for enrolment in the realization.
+        externalIdentifier:
+          type: string
+          description: An identifier provided by the organizing institution.
+          example: otm-2278f170-d8d0-4bf4-8e31-7b0e7f512f96
+        identifier:
+          $ref: '#/components/schemas/CourseUnitRealizationIdentifier'
+          description: >-
+            The HED identifier for the course unit realization, acting as a node
+            reference.
+          example: >-
+            hed://01909.opin.fi/CourseUnitRealization/otm-2278f170-d8d0-4bf4-8e31-7b0e7f512f96
+        ingress:
+          description: >
+            A brief description that encapsulates the main idea or purpose of
+            the data object, allowing users to quickly
+
+            grasp its significance.
+          $ref: '#/components/schemas/TextWithTranslations'
+        learningEnvironment:
+          $ref: '#/components/schemas/TextWithTranslations'
+          description: >
+            A description of the learning environment used in the course
+            realization.
+        learningMaterial:
+          $ref: '#/components/schemas/MarkupWithTranslations'
+          description: >
+            A description of the teaching materials used in the course
+            realization.
+
+            This may include reading lists or other required resources.
+        locations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Location'
+          description: |
+            Physical locations where the course realization takes place.
+            Examples include university buildings and classrooms.
+        name:
+          $ref: '#/components/schemas/TextWithTranslations'
+          description: |
+            The name of the course realization in different languages.
+            Example names could specify the teaching method or provider details.
+          example:
+            translations:
+              - language: urn:code:kieli:EN
+                text: >-
+                  On-site Teaching, Drama Teacher as Artist, Real-Time On-Site
+                  Teaching, JYU Open 1.1.2024–30.9.2025
+        realizationType:
+          $ref: '#/components/schemas/CourseUnitRealizationTypeCode'
+        state:
+          $ref: '#/components/schemas/CurriculumStateCode'
+        teachingLanguages:
+          description: |
+            The language(s) of instruction.
+            Language codes are retrieved from a coding system.
+          type: array
+          items:
+            $ref: '#/components/schemas/LanguageCode'
+        validityPeriod:
+          $ref: '#/components/schemas/OffsetDateTimeRange'
+          description: >
+            The actual period during which the course realization takes place.
+            This includes times such as exam dates or participation windows.
+          example:
+            start: '2023-12-31T22:00:00Z'
+            endExclusive: '2025-09-30T21:00:00Z'
+      x-tags:
+        - v1_studyoption_formal
+    AddOrUpdateCourseUnitRealizationsBatchRequest:
+      description: |
+        Request data to add or update a batch of course unit realizations.
+      type: array
+      minItems: 1
+      maxItems: 20
+      items:
+        $ref: '#/components/schemas/CourseUnitRealization'
+    EnrolmentTargetIdentifier:
+      description: Global Enrolment Target Identifier
+      type: string
+      example: 1.2.246.10.34113206.1.01909.3.3983e078-d504-445d-9ee4-2c5c956de46b
+      x-tags:
+        - v1_enrolment
+    LearnerIdentifier:
+      description: >
+        Global Learner Identifier, Oppijanumero,
+        https://wiki.eduuni.fi/display/OPHPALV/Oppijanumero.
+
+        Prefix is 1.2.246.562.24. or for test 1.2.246.562.98.
+      type: string
+      example: 1.2.246.562.98.20281155246
+      x-tags:
+        - schema-placeholder  - "v1_common"
+    EnrolmentIdentifier:
+      description: Global Enrolment Identifier
+      type: string
+      example: 1.2.246.10.34113206.1.01909.4.3983e078-d504-445d-9ee4-2c5c956de46b
+      x-tags:
+        - v1_enrolment
+    ParticipationStatus:
+      description: >
+        Status of the participation.
+
+        All participants are saved to single list based on enrolment time. If
+        there are more participants than maxParticipants then status is InQueue
+      type: string
+      enum:
+        - ABORTED_BY_STUDENT
+        - ABORTED_BY_TEACHER
+        - ACCEPTED
+        - IN_QUEUE
+        - NOT_ENROLLED
+        - PENDING
+        - REJECTED
+      x-tags:
+        - v1_common
+    EnrolmentParticipant:
+      description: Information about enrolment participant
+      type: object
+      required:
+        - enrolmentIdentifier
+        - enrolledAt
+        - learnerIdentifier
+        - contactDetails
+        - participationStatus
+      properties:
+        enrolmentIdentifier:
+          $ref: '#/components/schemas/EnrolmentIdentifier'
+        enrolledAt:
+          description: Date and time, with UTC offset, when the enrolment was made.
+          $ref: '#/components/schemas/OffsetDateTime'
+        learnerIdentifier:
+          description: Who did the enrolment
+          $ref: '#/components/schemas/LearnerIdentifier'
+        contactDetails:
+          $ref: '#/components/schemas/ContactPerson'
+        additionalDetails:
+          description: Enroller can put some information like diet etc.
+          $ref: '#/components/schemas/ValidString'
+        participationStatus:
+          $ref: '#/components/schemas/ParticipationStatus'
+        queuePosition:
+          description: >
+            If queuePosition is for example 2 it means that there is on
+            enrolment in queue before this so we are in second reserve position
+
+            If null then ParticipationStatus must be Accepted.
+          type: integer
+        refundableTill:
+          description: >-
+            Date and time, with UTC offset, when participation is no longer
+            refundable.
+          $ref: '#/components/schemas/OffsetDateTime'
+      x-tags:
+        - schema-placeholder  - "v1_enrolment"
+    GetEnrolmentsResponse:
+      type: object
+      required:
+        - participants
+      properties:
+        participants:
+          type: array
+          required:
+            - items
+          items:
+            $ref: '#/components/schemas/EnrolmentParticipant'
+    FormalStudyOptionInstanceIdentifier:
+      description: >-
+        Global Formal Study Option Instance Identifier. The identifier starts
+        with opinfi the HEDI prefix including the educational institution
+        identifier (a 5 digit identifier) of the institution owning the formal
+        study option instance followed by the HEDI resource type
+        "FormalStudyOptionInstance" followed by an identifier unique within the
+        institution. For e.g.
+        hed://01909.opin.fi/FormalStudyOptionInstance/finstance-12345 NOTE.
+        Special characters may be used with URL-encoding. Max length for
+        identifier is 200 characters.
+      type: string
+      format: uri
+      example: hed://01909.opin.fi/FormalStudyOptionInstance/finstance-12345
+      x-tags:
+        - v1_studyoption_formal
+    EnrolmentTarget:
+      description: Enrolment Target
+      type: object
+      required:
+        - educationalInstitutionCode
+        - studyOptionInstanceIdentifier
+        - participationPeriod
+        - queueSettings
+        - admissionPolicy
+      properties:
+        educationalInstitutionCode:
+          $ref: '#/components/schemas/EducationalInstitutionCode'
+        studyOptionInstanceIdentifier:
+          $ref: '#/components/schemas/FormalStudyOptionInstanceIdentifier'
+        description:
+          description: Description of the enrolment
+          $ref: '#/components/schemas/ValidString'
+        participationPeriod:
+          description: Date range when participation is possible
+          $ref: '#/components/schemas/OffsetDateTimeRange'
+        queueSettings:
+          description: Parameters for enrolment queuing
+          required:
+            - policy
+          type: object
+          properties:
+            policy:
+              description: What happens if there are more participants than maxParticipants
+              type: string
+              enum:
+                - ALLOW_QUEUEING
+                - HARD_LIMIT
+            maxParticipants:
+              description: Maximum number of participants allowed
+              type: integer
+              format: int32
+              example: 25
+        admissionPolicy:
+          description: >
+            Determines how enrolment is accepted. EnrolmentOrder uses the order
+            of enrolment. Manual when someone
+
+            chooses participants manually.
+          type: string
+          enum:
+            - ENROLMENT_ORDER
+            - MANUAL
+      x-tags:
+        - schema-placeholder  - "v1_enrolment"
+    AddEnrolmentRequest:
+      required:
+        - enrolmentIdentifier
+        - learnerIdentifier
+        - contactDetails
+        - queueOk
+      properties:
+        enrolmentTargetIdentifier:
+          $ref: '#/components/schemas/EnrolmentTarget'
+        learnerIdentifier:
+          description: Who did the enrolment
+          $ref: '#/components/schemas/LearnerIdentifier'
+        additionalDetails:
+          description: Enroller can put some information like diet etc.
+          $ref: '#/components/schemas/ValidString'
+        contactDetails:
+          $ref: '#/components/schemas/ContactPerson'
+        queueOk:
+          description: >-
+            If it is ok to enroll to queue. If this is false and there is not
+            room, CONFLICT is returned.
+          type: boolean
+    AddEnrolmentResponse:
+      type: object
+      required:
+        - enrolmentIdentifier
+        - participationStatus
+      properties:
+        enrolmentIdentifier:
+          $ref: '#/components/schemas/EnrolmentIdentifier'
+        participationStatus:
+          $ref: '#/components/schemas/ParticipationStatus'
+    GetEnrolmentTargetsResponse:
+      type: object
+      required:
+        - enrolmentTargets
+      properties:
+        enrolmentTargets:
+          type: array
+          required:
+            - items
+          items:
+            type: object
+            required:
+              - enrolmentTargetIdentifier
+              - enrolmentTarget
+            properties:
+              enrolmentTargetIdentifier:
+                $ref: '#/components/schemas/EnrolmentTargetIdentifier'
+              enrolmentTarget:
+                $ref: '#/components/schemas/EnrolmentTarget'
+    AddEnrolmentTargetRequest:
+      allOf:
+        - $ref: '#/components/schemas/EnrolmentTarget'
+    AddEnrolmentTargetResponse:
+      type: object
+      required:
+        - enrolmentTargetIdentifier
+      properties:
+        enrolmentTargetIdentifier:
+          $ref: '#/components/schemas/EnrolmentTargetIdentifier'
+    GetEnrolmentTargetResponse:
+      type: object
+      required:
+        - enrolmentTargetIdentifier
+        - enrolmentTarget
+      properties:
+        enrolmentTargetIdentifier:
+          $ref: '#/components/schemas/EnrolmentTargetIdentifier'
+        enrolmentTarget:
+          $ref: '#/components/schemas/EnrolmentTarget'
+    UpdateEnrolmentTargetRequest:
+      allOf:
+        - $ref: '#/components/schemas/EnrolmentTarget'
+    UpdateEnrolmentTargetResponse:
+      type: object
+      required:
+        - enrolmentTargetIdentifier
+      properties:
+        enrolmentTargetIdentifier:
+          $ref: '#/components/schemas/EnrolmentTargetIdentifier'
+    FormalStudyOptionIdentifier:
+      description: >-
+        Global Formal Study Option Identifier. The identifier starts with opinfi
+        the HEDI prefix including the educational institution identifier (a 5
+        digit identifier) of the institution owning the formal study option
+        followed by the HEDI resource type "FormalStudyOption" followed by an
+        identifier unique within the institution. For e.g.
+        hed://01909.opin.fi/FormalStudyOption/foption-12345 NOTE. Special
+        characters may be used with URL-encoding. Max length for identifier is
+        200 characters.
+      type: string
+      format: uri
+      example: hed://01909.opin.fi/FormalStudyOption/foption-12345
+      x-tags:
+        - v1_studyoption_formal
+    ContactPointCode:
+      description: >
+        The type of contact point, as defined by an Code System (under
+        development).
+      type: string
+      example: urn:hed:contact-point:more-information
+      x-tags:
+        - v1_common
+    ContactPoint:
+      description: >
+        Schema for a ContactPoint object, which can represent contact details
+        for an organization or a person.
+
+        Includes fields for email, phone, address, and optional descriptions or
+        additional URLs.
+      type: object
+      properties:
+        emailAddress:
+          type: string
+          format: email
+          description: |
+            The email address for the contact point.
+          example: firstname.lastname@example.foo
+        personName:
+          $ref: '#/components/schemas/PersonName'
+        phoneNumber:
+          $ref: '#/components/schemas/PhoneNumber'
+        contactForm:
+          type: object
+          $ref: '#/components/schemas/WebLinkWithTranslations'
+          description: |
+            The URL to a contact form associated with the contact point.
+        description:
+          $ref: '#/components/schemas/TextWithTranslations'
+          description: |
+            A description of the contact point, potentially localized.
+          example:
+            translations:
+              - language: urn:code:kieli:EN
+                text: Contact us by email for more information.
+        contactDetailsAddressUrl:
+          type: object
+          $ref: '#/components/schemas/WebLinkWithTranslations'
+          description: |
+            A URL linking to additional or more comprehensive contact details, 
+            such as an organization's contact page.
+        address:
+          $ref: '#/components/schemas/Address'
+          description: |
+            Address associated with the contact point.
+        contactPointType:
+          $ref: '#/components/schemas/ContactPointCode'
+      x-tags:
+        - v1_common
+    RichTextCode:
+      description: >
+        Type of rich text from Code system. NOTICE! It is the responsibility of
+        the services to define which HTML or markdown specifications they
+        support and to ensure security against threats such as XSS (Cross-Site
+        Scripting) or code injection.
+      type: string
+      example: urn:description-markup-type:markdown
+      x-tags:
+        - v1_common
+    RichText:
+      type: object
+      required:
+        - richText
+        - richTextType
+      properties:
+        richText:
+          $ref: '#/components/schemas/ValidString'
+          description: Styled description of the content
+          example: >-
+            In the *basic studies* of the **Finnish language**, students
+            familiarize themselves with the basics of the structure, meaning,
+            and use of the Finnish language, as well as the language as a
+            **social phenomenon**.
+        richTextType:
+          $ref: '#/components/schemas/RichTextCode'
+      x-tags:
+        - v1_common
+    TypedMarkupWithTranslations:
+      description: >-
+        Localized markdown markup for different languages with plain text. Note!
+        Schema does not specify service dependant supported markdown syntax.
+      type: object
+      required:
+        - translations
+      properties:
+        translations:
+          type: array
+          minItems: 1
+          items:
+            description: >-
+              Language and corresponding markup. NOTE! This might be extended
+              after comment round for Formal reviews. Plain text exists for
+              simple clients which might not support parsing content.
+            type: object
+            required:
+              - language
+              - title
+              - plainText
+            properties:
+              language:
+                $ref: '#/components/schemas/LanguageCode'
+              title:
+                $ref: '#/components/schemas/ValidString'
+                example: Basic information of the course
+              plainText:
+                $ref: '#/components/schemas/TextWithTranslations'
+                example: >-
+                  In the basic studies of the Finnish language, students
+                  familiarize themselves with the basics of the structure,
+                  meaning, and use of the Finnish language, as well as the
+                  language as a social phenomenon.
+              richTextContent:
+                $ref: '#/components/schemas/RichText'
+      x-tags:
+        - v1_common
+    ContentDescription:
+      description: >-
+        Schema for a description object, including type, optional order, title,
+        content, and default language.
+      type: object
+      required:
+        - type
+        - defaultLanguage
+      properties:
+        type:
+          type: string
+          description: Description type from the code system.
+          example: urn:hed:description:study-option:basic-description
+        order:
+          type: integer
+          description: >
+            If an order number is provided, it is a suggestion for the data
+            processor to display
+
+            the contents of the same type definition in the requested order.
+          example: 1
+        title:
+          type: object
+          description: Title of the description (without formatting).
+          properties:
+            text:
+              $ref: '#/components/schemas/TextWithTranslations'
+              description: The text which can be used as title
+              example: Programming course
+        content:
+          type: array
+          description: List of content items following the MarkupWithTranslation schema.
+          minItems: 1
+          items:
+            type: object
+            description: Language and corresponding markup.
+            properties:
+              markup:
+                description: Markup for the specified language.
+                $ref: '#/components/schemas/TypedMarkupWithTranslations'
+        defaultLanguage:
+          description: >-
+            Default language content should always be provided. This is
+            considered as a hint which language is provided at least.
+          $ref: '#/components/schemas/LanguageCode'
+      x-tags:
+        - v1_common
+    ExtensionValue:
+      description: |
+        Defines allowed value types for extension properties.
+      oneOf:
+        - type: array
+          minItems: 0
+          items:
+            oneOf:
+              - type: string
+              - type: number
+              - type: boolean
+              - type: object
+                maxProperties: 20
+        - type: boolean
+        - type: number
+        - type: object
+          maxProperties: 20
+        - type: string
+      x-tags:
+        - v1_common
+    Extension:
+      type: object
+      description: >
+        This schema defines an object that allows for custom,
+        institution-specific extension properties. It's used to add flexible,
+        non-standard attributes to API payloads without breaking the core
+        specification.
+
+        Each additional property's value must adhere to the ExtensionValue.yaml
+        schema.
+
+
+        **Best Practices:**  
+
+        - If you frequently require custom fields, consider submitting a request
+        for schema enhancements. This promotes a standardized and scalable
+        approach while maintaining extensibility.  
+
+        - Keep extensions meaningful and structured to avoid unnecessary
+        complexity. There is no nested object limits (at least not yet) so take
+        care amount of nested object. 
+
+
+        **Limitations**  
+
+        - Limits the total number of extension properties to 50, preventing
+        excessively large or complex payloads.  
+
+        - Certain **reserved property names** (`__proto__`, `constructor`,
+        `toString`) are **explicitly prohibited** to mitigate security risks,
+        such as prototype pollution attacks.  
+
+        - At least one property is required when using extension.  
+
+
+        **Required Behavior:**  
+
+        - If an extension is used, it **must contain at least one property**
+        (`minProperties: 1`). Empty extensions are not allowed.  
+      additionalProperties:
+        $ref: '#/components/schemas/ExtensionValue'
+      maxProperties: 50
+      minProperties: 1
+      propertyNames:
+        not:
+          enum:
+            - __proto__
+            - constructor
+            - toString
+      example:
+        institutionCourseCode: INST-CS101-2023
+        syllabusVersion: 2.5
+        isCreditBearing: true
+        requiredSoftware:
+          - Python
+          - VS Code
+        customGradingScale:
+          A: 90
+          B: 80
+          C: 70
+      x-tags:
+        - v1_common
+    StudyOptionStateCode:
+      description: >
+        A URN code containing the study option state (NOTE. draft and ready
+        states are not supported).
+
+        Details of all valid values defined by the code system can be found from
+        the target environments code-system API (GET
+        <servers.url>/v1/code-system/study-option-state):
+          - E.g. Pilot env: https://api-pilotti-dev.opindev.fi/services/hedi/v1/code-system/study-option-state
+      type: string
+      pattern: urn:code:study-option-state:(active|deleted|cancelled|archived)
+      example: urn:code:study-option-state:active
+      x-tags:
+        - v1_common
+    StudyOptionThemeCode:
+      description: >
+        A URN code containing the study option theme.
+
+        Details of all valid values defined by the code system can be found from
+        the target environments code-system API (GET
+        <servers.url>/v1/code-system/study-option-theme):
+          - E.g. Pilot env: https://api-pilotti-dev.opindev.fi/services/hedi/v1/code-system/study-option-theme
+      type: string
+      pattern: urn:code:study-option-theme:(\S{1,60})
+      example: urn:code:study-option-theme:new-technologies
+      x-tags:
+        - v1_common
+    StudyOptionThemeCodesList:
+      description: >
+        A list of URN codes containing the study option theme.
+
+        Details of all valid values defined by the code system can be found from
+        the target environments code-system API (GET
+        <servers.url>/v1/code-system/study-option-theme):
+          - E.g. Pilot env: https://api-pilotti-dev.opindev.fi/services/hedi/v1/code-system/study-option-theme
+      type: array
+      items:
+        $ref: '#/components/schemas/StudyOptionThemeCode'
+      x-tags:
+        - v1_studyoption
+    FormalStudyOptionType:
+      description: Formal Study Option type.
+      type: string
+      enum:
+        - COURSE_UNIT
+        - PACKAGE
+        - STUDY_MODULE
+        - STUDY_RIGHT
+      example: COURSE_UNIT
+      x-tags:
+        - v1_studyoption_formal
+    SalesInformation:
+      description: >-
+        Schema for a SalesInformation object, including price, currency, tax
+        rate, and optional conditions and additional information.
+      type: object
+      required:
+        - currency
+        - price
+        - taxRate
+      properties:
+        additionalInformation:
+          $ref: '#/components/schemas/MarkupWithTranslations'
+          description: >
+            Additional information about the sales or pricing, expressed as a
+            list of content descriptions.
+        currency:
+          $ref: '#/components/schemas/ValidString'
+          description: |
+            The ISO 4217-compliant three-letter currency code.
+          example: EUR
+        price:
+          type: number
+          description: >
+            The price, including tax, in cents. The value should be provided as
+            an integer.
+          example: 4500
+        priceCondition:
+          $ref: '#/components/schemas/MarkupWithTranslations'
+          description: >
+            Conditions related to the price, expressed as localized markup
+            elements.
+        priceValidFor:
+          $ref: '#/components/schemas/OffsetDateTimeRange'
+          description: |
+            The time range during which the price is valid.
+        taxRate:
+          type: number
+          description: >
+            The tax rate as a percentage. Value is in basis points, where 1% =
+            100.
+
+            Examples:
+
+            - 25.5% must be represented as 2550
+
+            - 14% must be represented as 1400
+          example: 2550
+      examples:
+        - name: Discounts examples
+          summary: Different Discounts
+          value:
+            additionalInformation:
+              translations:
+                - language: urn:code:kieli:EN
+                  markup: >-
+                    **Student Discount:** This discount is applicable to all
+                    students currently enrolled in an accredited institution. A
+                    valid student ID must be presented at the time of
+                    registration.
+                - language: urn:code:kieli:FI
+                  markup: >-
+                    **Opiskelija-alennus:** Alennus koskee kaikkia
+                    akkreditoiduissa oppilaitoksissa kirjoilla olevia
+                    opiskelijoita. Opiskelijakortti on esitettävä
+                    ilmoittautumisen yhteydessä.
+            currency: EUR
+            price: 4500
+            priceCondition:
+              translations:
+                - language: urn:code:kieli:EN
+                  markup: >-
+                    **Student Discount:** 20% off for students with a valid
+                    student ID.
+                - language: urn:code:kieli:FI
+                  markup: >-
+                    **Opiskelija-alennus:** 20 % alennus voimassaolevalla
+                    opiskelijakortilla.
+            taxRate: 2550
+      x-tags:
+        - v1_common
+    CourseUnitWithCompletionOptions:
+      description: >
+        A list of mappings between course units and their selected completion
+        options.
+
+        Each entry consists of a reference to a course unit and an array of
+        completion option references that have been chosen for that unit. 
+
+        The course unit itself might have more completion options; select here
+        which ones are in use with this option.
+
+        Course unit reference is needed because, actual course unit realization
+        might not exists when this data is shown.
+      type: object
+      required:
+        - completionOptionIdentifiers
+        - courseUnitIdentifier
+      properties:
+        completionOptionIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompletionOptionIdentifier'
+        courseUnitIdentifier:
+          description: A unique identifier for the course unit.
+          $ref: '#/components/schemas/CourseUnitIdentifier'
+      x-tags:
+        - v1_studyoption_formal
+    StudyStructure:
+      description: >
+        Study Structure defines which course units, course unit realizations and
+        completion options are included to entity. 
+
+        It is possible that there is study structure before course unit
+        realizations. In that case it should be left as empty list if course
+        unit realizations does not exists.
+      type: object
+      required:
+        - courseUnitRealizationIds
+        - courseUnitWithCompletionOptions
+      properties:
+        courseUnitRealizationIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseUnitRealizationIdentifier'
+        courseUnitWithCompletionOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseUnitWithCompletionOptions'
+      x-tags:
+        - v1_studyoption_formal
+    FormalStudyOptionInstance:
+      description: >
+        An instance of formal education describes the content of formal
+        education time-based content. 
+
+        For example there is FormalStudyOption like "Programming basics".It
+        defines some common details which can be references without knowing
+        course details etc. Maybe courses included are not decided yet
+        completely.  
+
+        For example, the courses may be scheduled for the period from January 1,
+        2024, to May 1, 2024. The formal study instance includes information for
+        specific time period. 
+
+        There might be a education package with same almost same content but
+        with different learning methods, then that creates another instance and
+        it refers to same Formal Study Option than other one because these two
+        instances shares same basic information.
+
+        And if there is same package for next year, it is a new instance because
+        time period is different, but it can refers same FormalStudyOption.
+      type: object
+      required:
+        - validityPeriod
+        - educationalInstitutionCode
+        - contactDetails
+        - identifier
+        - modifiedAt
+        - name
+        - relatedFormalStudyOption
+        - state
+        - studyFields
+        - type
+      properties:
+        additionalInformation:
+          description: >
+            This field provides supplementary details and context related to the
+            primary data. It is intended to capture
+
+            any relevant information that enhances understanding, including
+            explanations, clarifications, or additional
+
+            notes that may be necessary for comprehensive interpretation.
+          $ref: '#/components/schemas/TypedMarkupWithTranslations'
+        contactDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactPoint'
+        cooperationNetworkCode:
+          description: Cooperation network code from Codesystem (TODO)
+          type: string
+          example: urn:code:co-operation-network-code:A0001
+        creditsDescription:
+          description: >-
+            Textual explanation how credits are earned when minimum and maximum
+            are defined. How learner can achieve maximum credits.
+          $ref: '#/components/schemas/ContentDescription'
+        creditRange:
+          description: The scope of the study option. Currently supported only credits.
+          $ref: '#/components/schemas/CreditRange'
+        description:
+          description: >-
+            A concise description of the study option available to students,
+            outlining its focus, key topics, and intended learning outcomes.
+            This field aims to provide students with a clear understanding of
+            what the study option entails, helping them make informed decisions
+            about their educational path.
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentDescription'
+        educationalInstitutionCode:
+          description: Responsible organization
+          $ref: '#/components/schemas/EducationalInstitutionCode'
+        extension:
+          $ref: '#/components/schemas/Extension'
+        externalIdentifier:
+          description: Possible identifier in Educational Institution context
+          type: string
+          example: SEMINAARI-y659
+        inclusionApplicationInstruction:
+          description: >-
+            Guidelines for ensuring content compatibility with the specified
+            study option. This includes instructions on how to adapt materials
+            and resources to meet the needs of diverse learners, ensuring
+            accessibility and inclusivity. The instructions may cover aspects
+            such as format requirements, recommended tools, and best practices
+            for delivering content effectively to all students.
+          $ref: '#/components/schemas/TextWithTranslations'
+        ingress:
+          description: >
+            A brief description that encapsulates the main idea or purpose of
+            the data object, allowing users to quickly
+
+            grasp its significance.
+          $ref: '#/components/schemas/TextWithTranslations'
+        learningMaterial:
+          description: Learning materials for the study option
+          $ref: '#/components/schemas/TypedMarkupWithTranslations'
+        modifiedAt:
+          description: Last modification time with UTC offset.
+          $ref: '#/components/schemas/OffsetDateTime'
+        name:
+          description: Visible names for formal study option with language translations.
+          $ref: '#/components/schemas/TextWithTranslations'
+        objective:
+          description: Objective for the study option
+          $ref: '#/components/schemas/TypedMarkupWithTranslations'
+        prerequisites:
+          description: Prerequisites for the study option
+          $ref: '#/components/schemas/TypedMarkupWithTranslations'
+        state:
+          $ref: '#/components/schemas/StudyOptionStateCode'
+        studyFields:
+          description: OKM codes
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldOfStudyCode'
+        studyLevel:
+          description: Study level Code system code.
+          $ref: '#/components/schemas/StudyLevelCode'
+        themes:
+          description: Themes for formal study options from Code system
+          $ref: '#/components/schemas/StudyOptionThemeCodesList'
+        type:
+          $ref: '#/components/schemas/FormalStudyOptionType'
+          description: Formal study option type from code system.
+          example: urn:code:formal-study-option:package
+        url:
+          description: External URL of the study option
+          type: object
+          $ref: '#/components/schemas/WebLinkWithTranslations'
+          example: https://www.example.com/test/organizer
+        validityPeriod:
+          description: >-
+            Defines the start and end times (optional) of the offering, when the
+            Study option offering can be displayed. It is not an actual study
+            period.
+          $ref: '#/components/schemas/OffsetDateTimeRange'
+        identifier:
+          $ref: '#/components/schemas/FormalStudyOptionInstanceIdentifier'
+        relatedFormalStudyOption:
+          description: Id for formal Study Option is parent entity.
+          $ref: '#/components/schemas/FormalStudyOptionIdentifier'
+        language:
+          $ref: '#/components/schemas/LanguageCode'
+        learningEnvironment:
+          description: >
+            The learning environment description encompasses the setting and
+            context in which students engage with their studies.
+
+            Like physical classrooms, laboratories, virtual platforms, hybrid
+            models etc.
+          $ref: '#/components/schemas/TextWithTranslations'
+        salesInformation:
+          description: Sales information
+          $ref: '#/components/schemas/SalesInformation'
+        enrollmentUrl:
+          description: Url for enrollment.
+          $ref: '#/components/schemas/WebLinkWithTranslations'
+        enrollmentDateAntTimeRange:
+          description: Date and time range for enrollment.
+          $ref: '#/components/schemas/OffsetDateTimeRange'
+        enrollmentMinAttendance:
+          description: Minimum attendance count required
+          type: number
+          example: 10
+        enrollmentMaxAttendance:
+          description: Maximum attendance count required
+          type: number
+          example: 100
+        studyStructure:
+          type: object
+          $ref: '#/components/schemas/StudyStructure'
+      x-tags:
+        - v1_studyoption_formal
+    FormalStudyOption:
+      description: >
+        Basic information about education that is common to specific formal
+        offerings. Instances of formal offerings 
+
+        (FormalStudyOptionInstance) can override certain fields with their own
+        data content.
+
+        For example, there is Formal study option  "Orientation to research work
+        in education"
+
+        which has basic information how incoming offering contains like content
+        basic descrption "In the course: 
+
+        the methodological foundations of educational knowledge, principles
+        related to the nature, significance, and 
+
+        production of knowledge are examine" or learning outcomes "After
+        completing the course, the student understands 
+
+        educational research and its basic concepts". These information can be
+        specified in detailed level with Formal Study
+
+        Option Instances.
+      type: object
+      required:
+        - identifier
+        - validityPeriod
+        - educationalInstitutionCode
+        - contactDetails
+        - modifiedAt
+        - name
+        - state
+        - studyFields
+        - themes
+        - type
+      properties:
+        additionalInformation:
+          description: Additional information for the study option
+          $ref: '#/components/schemas/MarkupWithTranslations'
+        code:
+          description: A human readable identifier for this study option.
+          example: FYS-503
+          maxLength: 100
+          minLength: 1
+          type: string
+        contactDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactPoint'
+        cooperationNetworkCode:
+          description: Cooperation network code from Codesystem (TODO)
+          type: string
+          example: urn:code:co-operation-network-code:A0001
+        creditsDescription:
+          description: >-
+            Textual explanation how credits are earned when minimum and maximum
+            are defined. How learner can achieve maximum credits.
+          $ref: '#/components/schemas/ContentDescription'
+        creditRange:
+          description: The scope of the study option. Currently supported only credits.
+          $ref: '#/components/schemas/CreditRange'
+        description:
+          description: Description can be divided by sub topics if needed
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentDescription'
+        educationalInstitutionCode:
+          description: Responsible organization
+          $ref: '#/components/schemas/EducationalInstitutionCode'
+        extension:
+          $ref: '#/components/schemas/Extension'
+        externalIdentifier:
+          description: Possible identifier in Educational Institution context
+          type: string
+          example: SEMINAARI-y659
+        identifier:
+          $ref: '#/components/schemas/FormalStudyOptionIdentifier'
+          description: Identifier for study option
+          example: hed://01909.opin.fi/FormalStudyOption/option-abc
+        inclusionApplicationInstruction:
+          description: Content compatibility instructions for the study option
+          $ref: '#/components/schemas/TextWithTranslations'
+        ingress:
+          description: >
+            A brief description that encapsulates the main idea or purpose of
+            the data object, allowing users to quickly
+
+            grasp its significance.
+          $ref: '#/components/schemas/TextWithTranslations'
+        instances:
+          type: array
+          description: >-
+            List of Formal Study Option Instances related to this base Formal
+            Study Option
+          items:
+            $ref: '#/components/schemas/FormalStudyOptionInstance'
+        learningMaterial:
+          description: Learning materials for the study option
+          $ref: '#/components/schemas/TypedMarkupWithTranslations'
+        modifiedAt:
+          description: Last modification time with UTC offset.
+          $ref: '#/components/schemas/OffsetDateTime'
+        name:
+          description: Visible names for formal study option with language translations.
+          $ref: '#/components/schemas/TextWithTranslations'
+        objective:
+          description: Objective for the study option
+          $ref: '#/components/schemas/TypedMarkupWithTranslations'
+        prerequisites:
+          description: Prerequisites for the study option
+          $ref: '#/components/schemas/TypedMarkupWithTranslations'
+        state:
+          $ref: '#/components/schemas/StudyOptionStateCode'
+        studyFields:
+          description: OKM codes
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldOfStudyCode'
+        studyLevel:
+          description: Study level Code system code.
+          $ref: '#/components/schemas/StudyLevelCode'
+        themes:
+          description: Themes for formal study options from Code system
+          example: urn:code:formal-study-option-theme:health_and_well_being
+          $ref: '#/components/schemas/StudyOptionThemeCodesList'
+        type:
+          description: Formal study option type from code system.
+          example: urn:code:formal-study-option:package
+          $ref: '#/components/schemas/FormalStudyOptionType'
+        url:
+          description: External URL of the formal study option
+          type: object
+          $ref: '#/components/schemas/WebLinkWithTranslations'
+          example: https://www.example.com/test/organizer
+        validityPeriod:
+          description: >-
+            Defines the start and end times (optional) of the offering, when the
+            Study option offering can be displayed. It is not an actual study
+            period.
+          $ref: '#/components/schemas/OffsetDateTimeRange'
+      x-tags:
+        - v1_studyoption_formal
+    UpdateFormalStudyOptionRequest:
+      allOf:
+        - $ref: '#/components/schemas/FormalStudyOption'
+    UpdateFormalStudyOptionResponse:
+      type: object
+      required:
+        - identifier
+        - state
+      properties:
+        identifier:
+          $ref: '#/components/schemas/FormalStudyOptionIdentifier'
+        state:
+          $ref: '#/components/schemas/StudyOptionStateCode'
+    AddFormalStudyOptionRequest:
+      allOf:
+        - $ref: '#/components/schemas/FormalStudyOption'
+    AddFormalStudyOptionResponse:
+      type: object
+      required:
+        - identifier
+        - state
+      properties:
+        identifier:
+          $ref: '#/components/schemas/FormalStudyOptionIdentifier'
+        state:
+          $ref: '#/components/schemas/StudyOptionStateCode'
+    GetFormalStudyOptionsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormalStudyOption'
+    StudyElementType:
+      description: Study Element type.
+      type: string
+      enum:
+        - COURSE_UNIT
+        - STUDY_MODULE
+        - DEGREE_PROGRAMME
+      example: COURSE_UNIT
+      x-tags:
+        - v1_studyoption_formal
+    StudyElementBase:
+      description: |
+        Common properties for different types of Study Element.
+      type: object
+      required:
+        - identifier
+        - type
+      properties:
+        code:
+          description: Code in Educational Institution context
+          type: string
+          example: ABC.123
+        creditRange:
+          $ref: '#/components/schemas/CreditRange'
+        externalIdentifier:
+          description: Possible identifier in Educational Institution context
+          type: string
+          example: SEMINAARI-y659
+        name:
+          $ref: '#/components/schemas/TextWithTranslations'
+        studyFields:
+          description: Study fields
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldOfStudyCode'
+        type:
+          $ref: '#/components/schemas/StudyElementType'
+        validityPeriod:
+          description: The date range when the Study Element is meant to be visible.
+          $ref: '#/components/schemas/OffsetDateTimeRange'
+        location:
+          $ref: '#/components/schemas/Location'
+        salesInformation:
+          $ref: '#/components/schemas/SalesInformation'
+      x-tags:
+        - v1_studyoption_formal
+    StudyModuleIdentifier:
+      description: >-
+        Global Study Module Identifier. The identifier starts with opinfi the
+        HEDI prefix including the educational institution identifier (a 5 digit
+        identifier) of the institution owning the study module followed by the
+        HEDI resource type "CompletionOption" followed by an identifier unique
+        within the institution. For e.g.
+        hed://01909.opin.fi/StudyModule/smodule-12345 NOTE. Special characters
+        may be used with URL-encoding. Max length for identifier is 200
+        characters.
+      type: string
+      format: uri
+      example: hed://01909.opin.fi/StudyModule/smodule-12345
+      x-tags:
+        - v1_studyoption_formal
+    StudyModule:
+      description: >
+        Study Module specific fields. TODO: Add more rules and separate data
+        type
+
+        Opintokokonaisuus
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/StudyElementBase'
+        - type: object
+          properties:
+            rules:
+              description: Rules for completing the study element
+              type: array
+              items:
+                properties:
+                  mandatoryCredits:
+                    $ref: '#/components/schemas/Credit'
+                  mandatoryChildRef:
+                    $ref: '#/components/schemas/StudyModuleIdentifier'
+      x-tags:
+        - v1_studyoption_formal
+    StudyElement:
+      description: |
+        Study Element, which can be Course Unit or Study Module
+        Opintoelementti
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          COURSE_UNIT: '#/components/schemas/CourseUnit'
+          STUDY_MODULE: '#/components/schemas/StudyModule'
+      x-tags:
+        - v1_studyoption_formal
+    FormalStudyOptionBundle:
+      description: >
+        Formal Study Option. TODO: Harkitaan käytetäänkö bundlen sijaan
+        erillisiä endpointteja
+      type: object
+      required:
+        - formalStudyOptions
+      properties:
+        assessmentItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssessmentItem'
+        courseUnitRealizations:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseUnitRealization'
+        formalStudyOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormalStudyOption'
+        studyElements:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudyElement'
+      x-tags:
+        - v1_studyoption_formal
+    AddFormalStudyOptionBundleRequest:
+      allOf:
+        - $ref: '#/components/schemas/FormalStudyOptionBundle'
+    HediResourceIdentifier:
+      description: >-
+        Global Hedi Resource Identifier base class. The identifier starts with
+        opinfi the HEDI prefix including the educational institution identifier
+        (a 5 digit identifier) of the institution owning the resource, followed
+        by the HEDI resource type followed by an identifier unique within the
+        institution. For e.g. hed://01909.opin.fi/CompletionOption/coption-12345
+      type: string
+      format: uri
+      example: hed://01909.opin.fi/CompletionOption/coption-12345
+      maxLength: 200
+      x-tags:
+        - v1_common
+    ImportStatus:
+      description: |
+        Status of the data import.
+      type: string
+      enum:
+        - OK
+        - ERROR
+    AddFormalStudyOptionBundleResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: array
+          items:
+            type: object
+            properties:
+              identifier:
+                $ref: '#/components/schemas/HediResourceIdentifier'
+              status:
+                $ref: '#/components/schemas/ImportStatus'
+              message:
+                $ref: '#/components/schemas/ValidString'
+    AddFormalStudyOptionInstanceRequest:
+      allOf:
+        - $ref: '#/components/schemas/FormalStudyOptionInstance'
+    AddFormalStudyOptionInstanceResponse:
+      type: object
+      required:
+        - identifier
+        - state
+      properties:
+        identifier:
+          $ref: '#/components/schemas/FormalStudyOptionInstanceIdentifier'
+        state:
+          $ref: '#/components/schemas/StudyOptionStateCode'
+    GetFormalStudyOptionInstancesResponse:
+      type: object
+      required:
+        - studyOptionInstances
+      properties:
+        studyOptionInstances:
+          type: array
+          required:
+            - items
+          items:
+            $ref: '#/components/schemas/FormalStudyOptionInstance'
+    InformalStudyOptionIdentifier:
+      description: >-
+        Global Informal Study Option Identifier. The identifier starts with
+        opinfi the HEDI prefix including the educational institution identifier
+        (a 5 digit identifier) of the institution owning the informal study
+        option followed by the HEDI resource type "InformalStudyOption" followed
+        by an identifier unique within the institution. For e.g.
+        hed://01909.opin.fi/InformalStudyOption/infoption-12345 NOTE. Special
+        characters may be used with URL-encoding. Max length for identifier is
+        200 characters.
+      type: string
+      format: uri
+      example: hed://01909.opin.fi/InformalStudyOption/infoption-12345
+      x-tags:
+        - v1_studyoption
+    InformalStudyOptionModifiable:
+      description: |
+        Informal Study Option fields that are modifiable
+      type: object
+      required:
+        - contactDetails
+        - description
+        - ingress
+        - name
+        - state
+      properties:
+        code:
+          description: A human readable identifier for this study option.
+          example: FYS-503
+          maxLength: 100
+          minLength: 1
+          pattern: \S(.*\S)?
+          type: string
+        contactDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactDetails'
+        description:
+          description: Description about the content.
+          $ref: '#/components/schemas/MarkupWithTranslations'
+        ingress:
+          description: Short description abount the content.
+          $ref: '#/components/schemas/TextWithTranslations'
+        modifiedAt:
+          description: >
+            Optional last modification time with UTC offset. The value cannot be
+            in the future nor before creation time.
+
+            When creating an object, both modifiedAt and createdAt, or neither
+            of them, must be provided in the request.
+
+            Defaults to the current time.
+          $ref: '#/components/schemas/OffsetDateTime'
+        name:
+          description: Descriptive name for the content.
+          $ref: '#/components/schemas/TextWithTranslations'
+        state:
+          $ref: '#/components/schemas/StudyOptionStateCode'
+        studyFields:
+          description: OKM codes
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldOfStudyCode'
+        themes:
+          $ref: '#/components/schemas/StudyOptionThemeCodesList'
+        url:
+          description: >-
+            External URL of the informal study option for example to general
+            information page.
+          type: string
+          format: uri
+          example: https://www.example.com/test/organizer
+        validityPeriod:
+          description: The date range when the Study Option is meant to be visible.
+          $ref: '#/components/schemas/OffsetDateTimeRange'
+    InformalStudyOption:
+      description: >
+        Informal study or self-study (Statistics Finland’s definition): “In the
+        Adult Education Survey, self-study is 
+
+        defined as the acquisition of new knowledge or skills that occurs
+        outside of formal education.
+
+
+        This type of study can be quite informal and can take place alone, with
+        colleagues, or with acquaintances.
+
+
+        From the perspective of higher education institutions, this form of
+        offering includes “resources” produced by the 
+
+        institutions that learners can use independently to support their own
+        learning. In this case, the learner does 
+
+        not register as a student at the institution, and the institution does
+        not assess or grant academic credits to the learner.
+
+
+        For example, freely available open learning materials can be offered as
+        part of self-study offerings. 
+
+
+        (Reference and unofficially translated from
+        https://sanastot.suomi.fi/en/terminology/digivisio_2030/concept/concept-14
+        )
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/InformalStudyOptionModifiable'
+        - type: object
+          required:
+            - educationalInstitutionCode
+            - identifier
+          properties:
+            createdAt:
+              description: >
+                Optional creation time with UTC offset. The value cannot be in
+                the future nor after modifiedAt.
+
+                When creating an object, both modifiedAt and createdAt, or
+                neither of them, must be provided in the request.
+              $ref: '#/components/schemas/OffsetDateTime'
+            educationalInstitutionCode:
+              $ref: '#/components/schemas/EducationalInstitutionCode'
+            extension:
+              $ref: '#/components/schemas/Extension'
+            externalIdentifier:
+              description: >-
+                Possible identifier in Educational Institution context. This
+                property is immutable.
+              type: string
+              example: SEMINAARI-y659
+            identifier:
+              $ref: '#/components/schemas/InformalStudyOptionIdentifier'
+      x-tags:
+        - v1_studyoption_informal
+    UpdateInformalStudyOptionRequest:
+      allOf:
+        - $ref: '#/components/schemas/InformalStudyOptionModifiable'
+    UpdateInformalStudyOptionResponse:
+      type: object
+      required:
+        - identifier
+        - state
+      properties:
+        identifier:
+          $ref: '#/components/schemas/InformalStudyOptionIdentifier'
+        state:
+          $ref: '#/components/schemas/StudyOptionStateCode'
+    AddInformalStudyOptionRequest:
+      allOf:
+        - $ref: '#/components/schemas/InformalStudyOption'
+    AddInformalStudyOptionResponse:
+      type: object
+      required:
+        - identifier
+        - state
+      properties:
+        identifier:
+          $ref: '#/components/schemas/InformalStudyOptionIdentifier'
+        state:
+          $ref: '#/components/schemas/StudyOptionStateCode'
+    AddOrUpdateInformalStudyOptionsBatchRequest:
+      description: |
+        Request data to add or update a batch of informal study options.
+      type: array
+      minItems: 1
+      maxItems: 20
+      items:
+        $ref: '#/components/schemas/InformalStudyOption'
+    PagedResponse:
+      description: Abstract paged response
+      type: object
+      required:
+        - totalAmount
+      properties:
+        totalAmount:
+          type: integer
+          example: 10
+    GetInformalStudyOptionsResponse:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/PagedResponse'
+        - type: object
+          required:
+            - studyOptions
+          properties:
+            studyOptions:
+              type: array
+              required:
+                - items
+              items:
+                $ref: '#/components/schemas/InformalStudyOption'
+    InformalStudyOptionInstanceIdentifier:
+      description: >-
+        Global Informal Study Option Instance Identifier. The identifier starts
+        with opinfi the HEDI prefix including the educational institution
+        identifier (a 5 digit identifier) of the institution owning the informal
+        study option instance followed by the HEDI resource type
+        "InformalStudyOptionInstance" followed by an identifier unique within
+        the institution. For e.g.
+        hed://01909.opin.fi/InformalStudyOptionInstance/infinstance-12345 NOTE.
+        Special characters may be used with URL-encoding. Max length for
+        identifier is 200 characters.
+      type: string
+      format: uri
+      example: hed://01909.opin.fi/InformalStudyOptionInstance/infinstance-12345
+      x-tags:
+        - v1_studyoption
+    InformalStudyOptionInstance:
+      description: >
+        Discriminator and base class for different Study Option Instances.
+
+
+        An instance of informal study option instance describes the content of
+        time-based content, for example Webinars, Seminars, Event.
+
+
+        For instance, the webinars, events, or seminars may be scheduled for the
+        period from January 1, 2024, to May 1, 2024. 
+
+        The informal study instance includes information for this specific time
+        period.
+
+
+        There might be an educational package with almost the same content but
+        delivered through different learning methods 
+
+        (e.g., live webinars vs. recorded seminars). This creates another
+        instance, and it refers to the same InformalStudyOption as the other one
+        because these two instances share the same basic information.
+
+
+        If the same package is offered the next year, it is considered a new
+        instance because the time period is different, 
+
+        but it can refer to the same InformalStudyOption.
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          urn:code:informal-study-option-type:blog: '#/components/schemas/Blog'
+          urn:code:informal-study-option-type:event: '#/components/schemas/Event'
+          urn:code:informal-study-option-type:podcast: '#/components/schemas/Podcast'
+          urn:code:informal-study-option-type:publication: '#/components/schemas/Publication'
+          urn:code:informal-study-option-type:seminar: '#/components/schemas/Seminar'
+          urn:code:informal-study-option-type:video: '#/components/schemas/Video'
+          urn:code:informal-study-option-type:webinar: '#/components/schemas/Webinar'
+      required:
+        - authors
+        - contactDetails
+        - educationalInstitutionCode
+        - identifier
+        - keywords
+        - language
+        - state
+        - studyOptionIdentifier
+        - type
+        - validityPeriod
+      properties:
+        additionalInformation:
+          description: Possible extra information about the Study Option Instance.
+          $ref: '#/components/schemas/ValidString'
+        authors:
+          description: >
+            A list of authors or contributors associated with the content. This
+            may include presenters of webinars, speakers at seminars, creators
+            of videos, authors of publications or blogs, and organizers of
+            events.
+
+            Mandatory field for avoiding null list, use an empty list if no data
+            is available.
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidString'
+          example:
+            - John Doe
+            - Jane Smith
+        contactDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactDetails'
+        createdAt:
+          description: >
+            Optional creation time with UTC offset. The value cannot be in the
+            future nor after modifiedAt.
+
+            When creating an object, both modifiedAt and createdAt, or neither
+            of them, must be provided in the request.
+
+            Defaults to the current time.
+          $ref: '#/components/schemas/OffsetDateTime'
+        description:
+          description: >-
+            Additional description of the instance. If not provided in the
+            request, it will be populated from parent study option.
+          $ref: '#/components/schemas/MarkupWithTranslations'
+        educationalInstitutionCode:
+          $ref: '#/components/schemas/EducationalInstitutionCode'
+        externalIdentifier:
+          description: >-
+            Possible identifier in Educational Institution context. This
+            property is immutable.
+          type: string
+          example: SEMINAARI-y659
+        identifier:
+          $ref: '#/components/schemas/InformalStudyOptionInstanceIdentifier'
+        ingress:
+          description: Ingress
+          $ref: '#/components/schemas/TextWithTranslations'
+        keywords:
+          description: |
+            Keywords, for example services could use keywords as a SEO keywords.
+          type: array
+          items:
+            type: string
+            maxLength: 100
+        language:
+          $ref: '#/components/schemas/LanguageCode'
+        modifiedAt:
+          $ref: '#/components/schemas/OffsetDateTime'
+        name:
+          description: >-
+            Name of the instance. If not provided in the request, it should be
+            populated from parent study option in HEDI API implementations.
+          $ref: '#/components/schemas/TextWithTranslations'
+        state:
+          $ref: '#/components/schemas/StudyOptionStateCode'
+        studyOptionIdentifier:
+          $ref: '#/components/schemas/InformalStudyOptionIdentifier'
+        type:
+          $ref: '#/components/schemas/InformalStudyOptionTypeCode'
+        validityPeriod:
+          description: >-
+            The date range when the Study Option Instance is meant to be
+            visible.
+          $ref: '#/components/schemas/OffsetDateTimeRange'
+      x-tags:
+        - v1_studyoption_informal
+    Blog:
+      description: >
+        Blog specific fields. The content of educational blog articles are
+        designed to support self learning about the subject. 
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/InformalStudyOptionInstance'
+        - type: object
+          required:
+            - url
+          properties:
+            publisher:
+              description: Name of the publisher
+              $ref: '#/components/schemas/ValidString'
+              example: John Doe
+            url:
+              description: URL of the blog
+              type: string
+              format: uri
+              example: https://google.com
+      x-tags:
+        - v1_studyoption_informal
+    PositiveNumber:
+      description: A positive integer
+      type: integer
+      format: int32
+      minimum: 1
+      example: 1
+      x-tags:
+        - v1_common
+    EnrolmentBasic:
+      description: >
+        Basic data related enrolment context (excluding properties specific
+        properties for context, like OPS-data).
+      type: object
+      properties:
+        enrolmentDescription:
+          $ref: '#/components/schemas/MarkupWithTranslations'
+          description: >
+            Description related to enrolment. For example, if you need to have
+            pre-registered account.
+        enrolmentLink:
+          $ref: '#/components/schemas/WebLinkWithTranslations'
+          description: |
+            The web link where students can enroll for the course or event.
+        enrolmentPeriod:
+          $ref: '#/components/schemas/OffsetDateTimeRange'
+          description: |
+            The time frame during which enrolments are accepted.
+          example:
+            start: '2023-12-31T22:00:00Z'
+            endExclusive: '2025-06-30T20:59:00Z'
+        maxAttendance:
+          description: |
+            The maximum number of attendees allowed for this event.
+          $ref: '#/components/schemas/PositiveNumber'
+        minAttendance:
+          description: |
+            The minimum number of attendees (might be required for this event).
+          $ref: '#/components/schemas/PositiveNumber'
+    ContentType:
+      description: An IANA Media Type.
+      example: application/pdf
+      type: string
+    FileId:
+      type: string
+      format: uuid
+      example: 7d689acf-6905-4776-b519-c9ed3f216aaa
+    AttachmentResponse:
+      description: >
+        Attachment has a name, content type, a download URL, and optionally the
+        contents in Base64 encoded format.
+      type: object
+      required:
+        - contentType
+        - id
+        - name
+        - url
+      properties:
+        contentType:
+          $ref: '#/components/schemas/ContentType'
+        file:
+          description: Contents of the attachment in Base64 encoded format, if requested.
+          format: byte
+          type: string
+        id:
+          $ref: '#/components/schemas/FileId'
+        name:
+          description: File name of the attachment.
+          $ref: '#/components/schemas/ValidString'
+        url:
+          description: URL for downloading the attachment.
+          format: uri
+          type: string
+    Event:
+      description: >
+        Event specific fields. An event happening at a certain time and
+        location, such as a lecture. 
+
+        Recurring events can be added as repeated time slots. Event can contain
+        enrolment information.
+
+
+        **Note** Attachments are not yet supported.
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/InformalStudyOptionInstance'
+        - $ref: '#/components/schemas/EnrolmentBasic'
+        - type: object
+          required:
+            - timePeriods
+          properties:
+            attachments:
+              items:
+                $ref: '#/components/schemas/AttachmentResponse'
+              maxItems: 3
+              readOnly: true
+              type: array
+            location:
+              description: Location of the event.
+              $ref: '#/components/schemas/ValidString'
+              example: >-
+                Classroom A123, University of Applied Sciences, Education street
+                1, 12345 City
+            registrationUrl:
+              description: >
+                The URL where participants can register for the event.
+                Registration and enrolment might be different phases. For
+                example, registration is needed before enrolment and enrolment
+                process does not support registration process.
+              type: string
+              format: uri
+              example: https://google.com
+            remoteAttendanceUrl:
+              description: >
+                The URL for remote attendance, allowing participants to join the
+                event online.
+              type: string
+              format: uri
+              example: https://google.com
+            remoteAttendancePassword:
+              description: The password for attending the seminar.
+              $ref: '#/components/schemas/ValidString'
+              example: MySecret123
+            salesInformation:
+              $ref: '#/components/schemas/SalesInformation'
+            timePeriods:
+              description: >
+                The specific time slots when the event will occur. At least one
+                time slot is required.
+              type: array
+              items:
+                $ref: '#/components/schemas/OffsetDateTimeRange'
+              minItems: 1
+      x-tags:
+        - v1_studyoption_informal
+    Podcast:
+      description: >
+        Podcast specific fields. The voice content of educational podcast are
+        designed to support self learning about the subject.
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/InformalStudyOptionInstance'
+        - type: object
+          required:
+            - url
+          properties:
+            length:
+              description: Length (in seconds) of this episode
+              type: integer
+              example: 300
+            publisher:
+              description: Name of the publisher
+              $ref: '#/components/schemas/ValidString'
+              example: John Doe
+            sequenceNumber:
+              description: Sequence number of this episode
+              $ref: '#/components/schemas/PositiveNumber'
+            url:
+              description: URL of this episode
+              type: string
+              format: uri
+              example: https://google.com
+      x-tags:
+        - v1_studyoption_informal
+    Publication:
+      description: >
+        Publication specific fields. A text-based article or other material
+        published in a publication channel. 
+
+        (ref: https://sanastot.suomi.fi/terminology/tuha/concept/concept-45)
+         
+        **Note** There must be at least one ContactDetails with Author -role
+        when using content with opin.fi.
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/InformalStudyOptionInstance'
+        - type: object
+          required:
+            - url
+          properties:
+            publisher:
+              description: Name of the publisher
+              $ref: '#/components/schemas/ValidString'
+              example: John Doe
+            url:
+              description: URL
+              type: string
+              format: uri
+              example: https://google.com
+      x-tags:
+        - v1_studyoption_informal
+    Seminar:
+      description: >
+        Seminar specific fields. A seminar happening at a certain time and
+        location. Seminar can contain enrolment information.
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/InformalStudyOptionInstance'
+        - $ref: '#/components/schemas/EnrolmentBasic'
+        - type: object
+          required:
+            - timePeriod
+          properties:
+            attachments:
+              items:
+                $ref: '#/components/schemas/AttachmentResponse'
+              maxItems: 3
+              readOnly: true
+              type: array
+            location:
+              description: Location of the seminar.
+              $ref: '#/components/schemas/ValidString'
+              example: >-
+                Classroom A123, University of Applied Sciences, Education street
+                1, 12345 City
+            registrationUrl:
+              description: >
+                The URL where participants can register for the seminar.
+                Registration and enrolment might be different phases. For
+                example, registration is needed before enrolment and enrolment
+                process does not support registration process.
+              type: string
+              format: uri
+              example: https://google.com
+            remoteAttendancePassword:
+              description: The password for attending the seminar.
+              $ref: '#/components/schemas/ValidString'
+              example: MySecret123
+            remoteAttendanceUrl:
+              description: >
+                The URL for remote attendance, allowing participants to join the
+                seminar online.
+              type: string
+              format: uri
+              example: https://google.com
+            salesInformation:
+              $ref: '#/components/schemas/SalesInformation'
+            timePeriod:
+              description: |
+                The specific time slot when the seminar will occur.
+              $ref: '#/components/schemas/OffsetDateTimeRange'
+      x-tags:
+        - v1_studyoption_informal
+    Video:
+      description: >
+        Video specific fields.
+          
+        A video is one of the teaching methods used in the implementation of
+        informal or non-formal offerings on for example in Opin.fi. 
+
+        A video can be any video presentation available on a publishing platform
+        (a single video or a series), such as a lecture 
+
+        or webinar recording, a video blog, an animation, etc. 
+
+
+        The content provider is responsible for the availability, accessibility,
+        quality, content, and usage rights of the video in 
+
+        accordance with the rules and quality criteria. The content provider
+        maintains the information related to video-based offerings.
+
+
+        (Reference and unofficially translated from
+        https://sanastot.suomi.fi/terminology/digivisio_2030/concept/concept-43
+        )
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/InformalStudyOptionInstance'
+        - type: object
+          required:
+            - url
+          properties:
+            publisher:
+              description: >-
+                The full name of the entity or individual responsible for
+                publishing the video.
+              $ref: '#/components/schemas/ValidString'
+              example: John Doe
+            url:
+              description: >-
+                The web address where the video can be accessed. This should be
+                a valid URL.
+              type: string
+              format: uri
+              example: https://www.youtube.com/watch?v=QLViTeJvHpg
+      x-tags:
+        - v1_studyoption_informal
+    Webinar:
+      description: >
+        A webinar (also known as a *web* seminar) is a virtual event conducted
+        over the internet, where both presenters and the
+
+        audience participate from their own devices regardless of their
+        geographical location. Webinars can be utilized in
+
+        remote or online informal education by organizing lectures and training
+        sessions.
+
+
+        (Reference and translated unofficially
+        https://sanastot.suomi.fi/terminology/digivisio_2030/concept/concept-44
+        )
+
+
+        Webinar specific fields.
+
+        **Note** Attachments are not supported yet.
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/InformalStudyOptionInstance'
+        - $ref: '#/components/schemas/EnrolmentBasic'
+        - type: object
+          required:
+            - timePeriod
+          properties:
+            attachments:
+              description: Attachments are not supported yet.
+              items:
+                $ref: '#/components/schemas/AttachmentResponse'
+              maxItems: 3
+              readOnly: true
+              type: array
+            remoteAttendancePassword:
+              description: The password for attending the webinar.
+              $ref: '#/components/schemas/ValidString'
+              example: MySecret123
+            remoteAttendanceUrl:
+              description: >
+                The URL for remote attendance, allowing participants to join the
+                event online.
+              type: string
+              format: uri
+              example: https://google.com
+            salesInformation:
+              $ref: '#/components/schemas/SalesInformation'
+            timePeriod:
+              description: The specific time slot when the event will occur.
+              $ref: '#/components/schemas/OffsetDateTimeRange'
+      x-tags:
+        - v1_studyoption_informal
+    InformalStudyOptionTypeCode:
+      description: >
+        A URN code containing the informal study option type.
+
+        Details of all valid values defined by the code system can be found from
+        the target environments code-system API (GET
+        <servers.url>/v1/code-system/informal-study-option-type):
+          - E.g. Pilot env: https://api-pilotti-dev.opindev.fi/services/hedi/v1/code-system/informal-study-option-type
+      type: string
+      pattern: urn:code:informal-study-option-type:(\S{1,60})
+      example: urn:code:informal-study-option-type:blog
+      x-tags:
+        - v1_common
+    UpdateInformalStudyOptionInstanceResponse:
+      type: object
+      required:
+        - identifier
+        - state
+      properties:
+        identifier:
+          $ref: '#/components/schemas/InformalStudyOptionInstanceIdentifier'
+        state:
+          $ref: '#/components/schemas/StudyOptionStateCode'
+    AddInformalStudyOptionInstanceResponse:
+      type: object
+      required:
+        - identifier
+        - state
+      properties:
+        identifier:
+          $ref: '#/components/schemas/InformalStudyOptionInstanceIdentifier'
+        state:
+          $ref: '#/components/schemas/StudyOptionStateCode'
+    AddOrUpdateInformalStudyOptionInstancesBatchRequest:
+      description: >
+        Request data to add or update a batch of informal study option
+        instances.
+      type: array
+      minItems: 1
+      maxItems: 20
+      items:
+        $ref: '#/components/schemas/InformalStudyOptionInstance'
+    GetInformalStudyOptionInstancesResponse:
+      type: object
+      required:
+        - studyOptionInstances
+      properties:
+        studyOptionInstances:
+          type: array
+          required:
+            - items
+          items:
+            $ref: '#/components/schemas/InformalStudyOptionInstance'
+    AttachmentCreationResponse:
+      description: When an attachment was successfully created, a file id is returned.
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/FileId'
+x-tagGroups:
+  - name: Metainfo
+    tags:
+      - v1_info
+  - name: Requests and responses
+    tags:
+      - AssessmentItem
+      - CodeSystem
+      - CompletionOption
+      - CourseUnit
+      - CourseUnitRealization
+      - FormalStudyOption
+      - FormalStudyOptionInstance
+      - InformalStudyOption
+      - InformalStudyOptionInstance
+  - name: Schema models
+    tags:
+      - v1_common
+      - v1_info
+      - v1_studyoption
+      - v1_studyoption_formal
+      - v1_studyoption_informal
